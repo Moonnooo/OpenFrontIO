@@ -113,15 +113,30 @@ export class TransportShipExecution implements Execution {
       return;
     }
 
-    const closestTileSrc = this.attacker.canBuild(
-      UnitType.TransportShip,
-      this.dst,
+    const ownedTiles = this.mg.playerTiles(this.attacker);
+    const candidateTiles = ownedTiles.filter(tile =>
+        this.mg.isShore(tile) &&
+        this.attacker.canBuild(UnitType.TransportShip, tile) !== false
     );
-    if (closestTileSrc === false) {
-      console.warn(`can't build transport ship`);
-      this.active = false;
-      return;
+
+    if (candidateTiles.length === 0) {
+        console.warn(`can't build transport ship`);
+        this.active = false;
+        return;
     }
+
+    let bestSrc: TileRef | null = null;
+    let lowestCost = Infinity;
+
+    for (const tile of candidateTiles) {
+        const cost = this.pathFinder.estimateCost(tile, this.dst); // estimated travel cost/time
+        if (cost < lowestCost) {
+            lowestCost = cost;
+            bestSrc = tile;
+        }
+    }
+
+    this.src = bestSrc!;
 
     if (this.src === null) {
       // Only update the src if it's not already set
