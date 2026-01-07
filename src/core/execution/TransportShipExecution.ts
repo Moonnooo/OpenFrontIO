@@ -113,15 +113,45 @@ export class TransportShipExecution implements Execution {
       return;
     }
 
-    const closestTileSrc = this.attacker.canBuild(
-      UnitType.TransportShip,
-      this.dst,
-    );
-    if (closestTileSrc === false) {
-      console.warn(`can't build transport ship`);
-      this.active = false;
-      return;
-    }
+  	let candidateTiles: TileRef[] | null = null;
+  	if (typeof this.attacker.transportShipSpawnCandidates === "function") {
+  	  candidateTiles = this.attacker.transportShipSpawnCandidates();
+  	}
+  
+  	if (!candidateTiles || candidateTiles.length === 0) {
+  	  const fallback = this.attacker.bestTransportShipSpawn(this.dst);
+  	  if (fallback === false) {
+  		console.warn(`can't find valid transport ship spawn`);
+  		this.active = false;
+  		return;
+  	  }
+  	  this.src = fallback;
+  
+  	  this.boat = this.attacker.buildUnit(UnitType.TransportShip, this.src, {
+  		troops: this.startTroops,
+  	  });
+  	  if (this.dst) this.boat.setTargetTile(this.dst);
+  	  return;
+  	}
+  
+  	let bestSrc: TileRef | null = null;
+  	let lowestCost = Infinity;
+  
+  	for (const ref of candidateTiles) {
+  	  const cost = this.pathFinder.estimateCost(ref, this.dst);
+  	  if (cost < lowestCost) {
+  		lowestCost = cost;
+  		bestSrc = ref;
+  	  }
+  	}
+  
+  	if (!bestSrc) {
+  	  console.warn(`can't find valid transport ship spawn`);
+  	  this.active = false;
+  	  return;
+  	}
+  
+  	this.src = bestSrc;
 
     if (this.src === null) {
       // Only update the src if it's not already set
