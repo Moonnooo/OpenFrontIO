@@ -86,13 +86,13 @@ describe("nav-account-menu", () => {
     await el.updateComplete;
   }
 
-  it("offers only sign-in while signed out", async () => {
+  it("offers our stats and sign-in while signed out", async () => {
     // Game settings are a top-level navbar item, so the dropdown no longer
     // duplicates them — a "Sign in" trigger listing them read as a bug.
     fireUserMe(false);
     await el.updateComplete;
     await click(trigger());
-    expect(itemKeys()).toEqual(["sign-in"]);
+    expect(itemKeys()).toEqual(["view-stats", "sign-in"]);
 
     const showPage = vi.fn();
     window.showPage = showPage;
@@ -108,7 +108,7 @@ describe("nav-account-menu", () => {
     } as unknown as UserMeResponse);
     await el.updateComplete;
     await click(trigger());
-    expect(itemKeys()).toEqual(["sign-in"]);
+    expect(itemKeys()).toEqual(["view-stats", "sign-in"]);
   });
 
   it("toggles the menu for a signed-in user", async () => {
@@ -160,7 +160,7 @@ describe("nav-account-menu", () => {
 
     expect(copyToClipboard).toHaveBeenCalledTimes(1);
     expect(vi.mocked(copyToClipboard).mock.calls[0][0]).toContain(
-      "modal=profile&publicID=p",
+      "/stats/?player=p#profile-section",
     );
     expect(showToast).toHaveBeenCalledWith("common.copied", "green");
 

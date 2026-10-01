@@ -927,6 +927,10 @@ export class AccountModal extends BaseModal {
       .then((userMe) => {
         if (userMe) {
           this.userMeResponse = userMe;
+          if (hasLinkedIdentity(userMe.user)) {
+            window.location.assign(playerProfileUrl(userMe.player.publicId));
+            return;
+          }
           if (this.userMeResponse?.player?.publicId) {
             this.loadPlayerProfile(this.userMeResponse.player.publicId);
           }

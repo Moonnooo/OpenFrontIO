@@ -14,6 +14,10 @@ export function closeMobileSidebar() {
 
 export function initNavigation() {
   const showPage = (pageId: string) => {
+    if (pageId === "page-leaderboard") {
+      window.location.assign("/stats/");
+      return;
+    }
     window.currentPageId = pageId;
 
     // Close mobile sidebar if a nav item was clicked

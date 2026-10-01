@@ -1572,7 +1572,8 @@
     "log_out": "Log out",
     "log_out_confirm": "Log out of this account?",
     "title": "Account menu",
-    "view_account": "View account"
+    "view_account": "View profile & stats",
+    "my_stats": "My stats"
   },
   "new_lobby_prompt": {
     "confirm": "Start a new lobby? All players will be invited to join.",

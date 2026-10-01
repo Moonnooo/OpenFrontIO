@@ -186,6 +186,12 @@ export class NavAccountMenu extends LitElement {
     if (!this.isSignedIn()) {
       return [
         {
+          key: "view-stats",
+          labelKey: "nav_account_menu.my_stats",
+          icon: iconUser,
+          onSelect: () => window.location.assign(this.userMeResponse ? playerProfileUrl(this.userMeResponse.player.publicId) : "/stats/"),
+        },
+        {
           key: "sign-in",
           labelKey: "main.sign_in",
           icon: iconUser,
@@ -223,7 +229,7 @@ export class NavAccountMenu extends LitElement {
         labelKey: "nav_account_menu.view_account",
         icon: iconUser,
         onSelect: () => {
-          window.showPage?.("page-account");
+          window.location.assign(playerProfileUrl(publicId));
         },
       },
       {

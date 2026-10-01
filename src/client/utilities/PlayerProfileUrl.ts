@@ -13,5 +13,5 @@ import { ClientEnv } from "../ClientEnv";
  * `app://openfront/index.html#modal=profile&publicID=…`).
  */
 export function playerProfileUrl(publicId: string): string {
-  return `${ClientEnv.shareBase()}#modal=profile&publicID=${encodeURIComponent(publicId)}`;
+  return `${ClientEnv.shareOrigin()}/stats/?player=${encodeURIComponent(publicId)}#profile-section`;
 }

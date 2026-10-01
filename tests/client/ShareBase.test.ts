@@ -138,13 +138,13 @@ describe("deriveShareBase", () => {
 });
 
 describe("playerProfileUrl", () => {
-  it("hangs the profile hash off the share base, not off window.location", () => {
+  it("opens the own stats page for the encoded public player ID", () => {
     const shareBase = vi
-      .spyOn(ClientEnv, "shareBase")
-      .mockReturnValue("https://openfront.io/");
+      .spyOn(ClientEnv, "shareOrigin")
+      .mockReturnValue("https://game.exudizmono.com");
     try {
       expect(playerProfileUrl("a+b")).toBe(
-        "https://openfront.io/#modal=profile&publicID=a%2Bb",
+        "https://game.exudizmono.com/stats/?player=a%2Bb#profile-section",
       );
     } finally {
       shareBase.mockRestore();

@@ -11,7 +11,7 @@ The live VPS directory is /opt/frontrank: source in game, configuration in deplo
 
 ## Build and restart
 
-Dockerfile.frontrank at the fork root builds the modified source with Node 24 and locked dependencies. Tag it frontrank-game:versions. Dockerfile.brand and Dockerfile.accounts are incremental optimizations against earlier images, not the clean-build entrypoint.
+Dockerfile.frontrank at the fork root builds the modified source with Node 24 and locked dependencies. Tag it frontrank-game:profiles. Dockerfile.brand and Dockerfile.accounts are incremental optimizations against earlier images, not the clean-build entrypoint.
 
 Compose mounts the API, server JWT verifier and compiled index. Refresh these mounts when updating source: copy the new image's /app/static/index.html to public/game-index.html, copy api.mjs, accounts.mjs and src/server/jwt.ts to deploy, then run docker compose up -d. Set runtime GIT_COMMIT to the deployed fork revision. Preserve runtime secrets and data.
 
@@ -34,3 +34,5 @@ A complete human multiplayer round and load testing have not been performed. Rec
 Primary branding is Exudizmono. Original notices remain visible in the footer/loading screen, licence files and /credits/. Corresponding deployed source is available at /source.tar.gz. Proprietary assets are excluded from the deployed image/source archive.
 
 Independent header versions are recorded in resources/fork-version.json. Bump exudizmono for our releases; change upstreamRef/upstreamCommit only after an upstream update.
+
+Profile and leaderboard entry points now open our own /stats/ page. Share links use /stats/?player=PUBLIC_ID#profile-section. The page loads the requested player without replacing them with the viewer’s identity, and shows all-time totals plus up to 50 recent recorded matches. The signed-in account modal redirects to this profile; guest sign-in remains available.

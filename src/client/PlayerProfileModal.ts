@@ -28,6 +28,11 @@ export type ProfileOrigin = "clan" | "leaderboard" | "account";
 export class PlayerProfileModal extends BaseModal {
   protected routerName = "profile";
 
+  public open(args?: Record<string, unknown>): void {
+    const publicId = typeof args?.publicID === "string" ? args.publicID : "";
+    window.location.assign(publicId ? playerProfileUrl(publicId) : "/stats/#profile-section");
+  }
+
   @state() private publicId: string | null = null;
   @state() private username: string | null = null;
   @state() private statsTree: PlayerStatsTree | null = null;

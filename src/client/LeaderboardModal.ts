@@ -25,6 +25,10 @@ const PLAYER_TABS: Record<string, RankedType> = {
 export class LeaderboardModal extends BaseModal {
   protected routerName = "leaderboard";
 
+  public open(_args?: Record<string, unknown>): void {
+    window.location.assign("/stats/");
+  }
+
   @state()
   private clanDateRange: { start: string; end: string } | null = null;
 

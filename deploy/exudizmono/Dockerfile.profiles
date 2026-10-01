@@ -1,0 +1,10 @@
+FROM frontrank-game:versions
+COPY src/client/utilities/PlayerProfileUrl.ts /app/src/client/utilities/PlayerProfileUrl.ts
+COPY src/client/Navigation.ts /app/src/client/Navigation.ts
+COPY src/client/components/NavAccountMenu.ts /app/src/client/components/NavAccountMenu.ts
+COPY src/client/AccountModal.ts /app/src/client/AccountModal.ts
+COPY src/client/PlayerProfileModal.ts /app/src/client/PlayerProfileModal.ts
+COPY src/client/LeaderboardModal.ts /app/src/client/LeaderboardModal.ts
+COPY resources/lang/en.json /app/resources/lang/en.json
+COPY resources/fork-version.json /app/resources/fork-version.json
+RUN npm run build-prod
