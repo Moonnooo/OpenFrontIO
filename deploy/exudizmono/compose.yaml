@@ -1,6 +1,6 @@
 services:
  api:
-  image: frontrank-game:accounts
+  image: frontrank-game:versions
   command: ["node", "--import", "tsx", "api.mjs"]
   network_mode: host
   env_file:
@@ -18,7 +18,7 @@ services:
   logging:
    options: {max-size: "10m", max-file: "3"}
  game:
-  image: frontrank-game:accounts
+  image: frontrank-game:versions
   network_mode: host
   env_file: runtime.env
   depends_on: [api]

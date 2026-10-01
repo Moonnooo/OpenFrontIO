@@ -1,4 +1,5 @@
 import version from "resources/version.txt?raw";
+import forkVersion from "resources/fork-version.json";
 import { ClientEnv } from "./ClientEnv";
 
 // A build HAS a version only if it was tagged. resources/version.txt ships as
@@ -84,15 +85,18 @@ const NAV_VERSION_SELECTOR = "#game-version, .game-version-display";
  * Lives here rather than inline in Main.ts so it can be tested without
  * importing Main.ts, which is a module of side effects.
  *
- * Uses taggedGameVersion, not currentGameVersion: the nav bar and the footer
- * answer different questions on an untagged build, by decision rather than by
- * drift (OPE-387).
+ * The header shows independent fork and upstream versions from fork-version.json.
+ * The footer continues to identify the exact deployed build commit.
  */
 export function renderNavVersion(root: ParentNode = document): number {
   const elements = root.querySelectorAll(NAV_VERSION_SELECTOR);
-  const label = taggedGameVersion(version);
+  const label = `Exudizmono v${forkVersion.exudizmono}\nOpenFront ${forkVersion.upstreamRef} · ${forkVersion.upstreamCommit.slice(0, 7)}`;
   elements.forEach((el) => {
     (el as HTMLElement).style.fontFamily = '"OpenFront", Inter, sans-serif';
+    (el as HTMLElement).style.whiteSpace = "pre-line";
+    (el as HTMLElement).style.fontSize = "11px";
+    (el as HTMLElement).style.lineHeight = "1.4";
+    (el as HTMLElement).title = `Exudizmono v${forkVersion.exudizmono}; OpenFront ${forkVersion.upstreamRef} at ${forkVersion.upstreamCommit}`;
     el.textContent = label;
   });
   return elements.length;

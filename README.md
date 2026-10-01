@@ -13,6 +13,14 @@ Recorded wins are not a skill rating. Email sign-in links, Discord/Google OAuth 
 
 ---
 
+## Independent versions
+
+The header shows Exudizmono’s release and the exact OpenFront base separately.
+Edit `resources/fork-version.json` to bump `exudizmono` for our releases; update
+`upstreamRef` and `upstreamCommit` only when deliberately merging a new upstream
+base. Our initial independent release is v0.1.0. This main-branch base is not
+labelled as a tagged upstream release. The footer retains the deployed commit.
+
 ## Upstream project documentation
 
 <p align="center">

@@ -1,4 +1,5 @@
 import version from "resources/version.txt?raw";
+import forkVersion from "resources/fork-version.json";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ClientEnv } from "../../src/client/ClientEnv";
 import {
@@ -140,10 +141,8 @@ describe("renderNavVersion", () => {
     };
   };
 
-  // The regression this pins: with a real commit sitting in BOOTSTRAP_CONFIG
-  // and version.txt still the placeholder, the nav bar shows the version
-  // anyway. Swapping the helper back to currentGameVersion turns this red.
-  it("stamps the version, not the commit, onto both nav bars", () => {
+  // The deployed commit must not replace either independent version label.
+  it("stamps independent fork and upstream versions onto both nav bars", () => {
     setBootstrap();
     document.body.innerHTML = `
       <span id="game-version"></span>
@@ -154,10 +153,11 @@ describe("renderNavVersion", () => {
     for (const el of document.querySelectorAll(
       "#game-version, .game-version-display",
     )) {
-      expect(el.textContent).toBe(taggedGameVersion(version));
-      // Always a version, whatever version.txt holds when this runs: the
-      // commit form has no leading v and this one always does.
-      expect(el.textContent).toMatch(/^v/);
+      expect(el.textContent).toContain(`Exudizmono v${forkVersion.exudizmono}`);
+      expect(el.textContent).toContain(`OpenFront ${forkVersion.upstreamRef} · ${forkVersion.upstreamCommit.slice(0, 7)}`);
+      expect(el.textContent).not.toContain(SHA.slice(0, 7));
+      // The untagged upstream placeholder must never appear in this header.
+      expect(el.textContent).not.toContain("x.xx.xx");
     }
   });
 
