@@ -106,6 +106,7 @@ export class ServerEnv {
     return process.env.CDN_BASE ?? "";
   }
   static jwtIssuer(): string {
+    if (process.env.STANDALONE_API_URL) return process.env.STANDALONE_API_URL;
     const audience = ServerEnv.jwtAudience();
     return audience === "localhost"
       ? "http://localhost:8787"
@@ -133,7 +134,7 @@ export class ServerEnv {
     return 100;
   }
   static gameCreationRate(): number {
-    return ServerEnv.gameEnv === GameEnv.Dev ? 5 * 1000 : 2 * 60 * 1000;
+    return process.env.STANDALONE_API_URL ? 60 * 1000 : ServerEnv.gameEnv === GameEnv.Dev ? 5 * 1000 : 2 * 60 * 1000;
   }
   static workerIndex(gameID: GameID): number {
     return simpleHash(gameID) % ServerEnv.numWorkers();

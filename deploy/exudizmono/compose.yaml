@@ -1,0 +1,27 @@
+services:
+ api:
+  image: frontrank-game:exudizmono
+  command: ["node", "--import", "tsx", "api.mjs"]
+  network_mode: host
+  env_file: runtime.env
+  environment:
+   DATA_DIR: /data
+  volumes:
+   - ./data:/data
+   - ./deploy/api.mjs:/app/api.mjs:ro
+  restart: unless-stopped
+  mem_limit: 1g
+  logging:
+   options: {max-size: "10m", max-file: "3"}
+ game:
+  image: frontrank-game:exudizmono
+  network_mode: host
+  env_file: runtime.env
+  depends_on: [api]
+  volumes:
+   - ./public/game-index.html:/app/static/index.html:ro
+   - ./deploy/jwt.ts:/app/src/server/jwt.ts:ro
+  restart: unless-stopped
+  mem_limit: 4g
+  logging:
+   options: {max-size: "10m", max-file: "3"}

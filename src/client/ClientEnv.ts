@@ -245,6 +245,7 @@ export class ClientEnv {
     return ClientEnv.get().gitCommit;
   }
   static jwtIssuer(): string {
+    if (["77.68.55.16", "game.exudizmono.com"].includes(window.location.hostname)) return window.location.origin + "/backend";
     const audience = ClientEnv.jwtAudience();
     return audience === "localhost"
       ? "http://localhost:8787"
@@ -429,6 +430,7 @@ export class ClientEnv {
   // to build the URL routes it into the connection-failed path callers
   // already have for numWorkers().
   static serverWsBase(): string {
+    if (["77.68.55.16", "game.exudizmono.com"].includes(window.location.hostname)) return (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host;
     const picked = ClientEnv.pickedServer();
     if (picked !== null) return `wss://${picked.host}`;
     ClientEnv.requireOwnServer("WebSocket");
@@ -449,6 +451,7 @@ export class ClientEnv {
   // is what stops createLobby POSTing `/api/create_game` at a page host that
   // cannot answer it.
   static serverHttpBase(): string {
+    if (["77.68.55.16", "game.exudizmono.com"].includes(window.location.hostname)) return window.location.origin;
     const picked = ClientEnv.pickedServer();
     if (picked !== null) return `https://${picked.host}`;
     ClientEnv.requireOwnServer("HTTP");

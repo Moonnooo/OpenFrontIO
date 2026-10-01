@@ -603,7 +603,7 @@
     "retry": "Retry",
     "starting_link": "Starting account linking…",
     "ticket_unavailable": "Couldn't start account linking right now. You can try again, or continue to the game.",
-    "title": "OpenFront - Account Setup"
+    "title": "Exudizmono"
   },
   "desktop_presence": {
     "in_game": "In game",
@@ -1338,7 +1338,7 @@
     "solo": "Solo",
     "store": "Store",
     "terms_of_service": "Terms of Service",
-    "title": "OpenFront (ALPHA)",
+    "title": "Exudizmono",
     "troubleshooting": "Troubleshooting",
     "tutorial": "Tutorial",
     "user_avatar_alt": "{username}'s avatar",

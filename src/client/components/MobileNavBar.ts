@@ -1,6 +1,5 @@
 import { html, LitElement, TemplateResult } from "lit";
 import { customElement } from "lit/decorators.js";
-import { assetUrl } from "../../core/AssetUrls";
 import { NavNotificationsController } from "./NavNotificationsController";
 
 const MOBILE_ITEM =
@@ -85,11 +84,7 @@ export class MobileNavBar extends LitElement {
           class="flex flex-col text-malibu-blue mb-4 ml-[clamp(0.2rem,0.4vw,0.4vh)]"
         >
           <div class="flex flex-col items-center gap-1">
-            <img
-              src=${assetUrl("images/OpenFrontLogo.svg")}
-              alt="OpenFront"
-              class="w-auto h-auto max-w-[220px] max-h-[4.5rem]"
-            />
+            <a href="https://exudizmono.com/" class="text-white font-bold tracking-widest" style="font-size:clamp(17px,2vw,27px);text-decoration:none" aria-label="Exudizmono home">EXUDIZMONO</a>
             <div
               id="game-version"
               class="l-header__highlightText text-center"

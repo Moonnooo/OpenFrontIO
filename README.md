@@ -1,3 +1,20 @@
+# Exudizmono
+
+Independent community game based on OpenFront, with our own guest sessions, VPS hosting and match statistics.
+
+- Website: https://exudizmono.com/
+- Play: https://game.exudizmono.com/
+- Stats: https://game.exudizmono.com/stats/
+- Development repository: https://github.com/Moonnooo/OpenFrontIO
+
+Fork base: upstream commit e02eeba (1 October 2026). Changes are committed in this fork. Keep the upstream remote for deliberate updates; review and test upstream merges before deployment. The files in deploy/exudizmono document our independent backend and VPS setup. Runtime secrets, identities, private keys and match databases are excluded.
+
+Recorded wins are not a skill rating. Ranked queues, recovery accounts and complete anti-cheat validation remain future work. Original copyright and licensing notices are preserved below and in LICENSE, LICENSE-ASSETS and the live credits page.
+
+---
+
+## Upstream project documentation
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="proprietary/images/OpenFrontLogoDark.svg">
@@ -29,7 +46,7 @@ Modified versions must preserve these notices in reasonably visible locations.
 
 See the [LICENSE](LICENSE) for complete requirements.
 
-For asset licensing, see [LICENSE-ASSETS](LICENSE-ASSETS).  
+For asset licensing, see [LICENSE-ASSETS](LICENSE-ASSETS).
 For license history, see [LICENSING.md](LICENSING.md).
 
 ## 🌟 Features

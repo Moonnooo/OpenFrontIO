@@ -23,7 +23,7 @@ export async function verifyClientToken(
   token: string,
 ): Promise<TokenVerificationResult> {
   if (PersistentIdSchema.safeParse(token).success) {
-    if (ServerEnv.env() === GameEnv.Dev) {
+    if (ServerEnv.env() === GameEnv.Dev && !process.env.STANDALONE_API_URL) {
       return { type: "success", persistentId: token, claims: null };
     } else {
       return {
@@ -33,7 +33,7 @@ export async function verifyClientToken(
     }
   }
   try {
-    const issuer = ServerEnv.jwtIssuer();
+    const issuer = process.env.JWT_ISSUER || ServerEnv.jwtIssuer();
     const audience = ServerEnv.jwtAudience();
     const key = await ServerEnv.jwkPublicKey();
     const { payload } = await jwtVerify(token, key, {

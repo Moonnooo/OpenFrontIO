@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <title data-i18n="main.title">OpenFront (ALPHA)</title>
+    <title data-i18n="main.title">Exudizmono</title>
     <link rel="manifest" href="<%- manifestHref %>" />
     <link rel="icon" type="image/svg+xml" href="<%- faviconHref %>" />
 
@@ -219,43 +219,18 @@
       window.ramp.passiveMode = true;
     </script>
 
-    <script>
-      window.googletag = window.googletag || { cmd: [] };
-      googletag.cmd.push(function () {
-        googletag.pubads().set("page_url", "http://openfront.io ");
-      });
-    </script>
+
 
     <!-- Analytics -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=AW-16702609763"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
 
-      function gtag() {
-        dataLayer.push(arguments);
-      }
 
-      gtag("js", new Date());
-      gtag("config", "AW-16702609763");
-    </script>
     <!-- Google tag (gtag.js) -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-WQGQQ8RDN4"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
 
-      gtag("config", "G-WQGQQ8RDN4");
-    </script>
-  </head>
+
+  <style>steam-wishlist,steam-widget,homepage-promos,purchase-nudge-modal,marketing-consent-toast,featured-stream,[data-page="page-item-store"],[data-page="page-inventory"],[data-page="page-clan"],a[href="/terms-of-service.html"],a[href="/privacy-policy.html"]{display:none!important}</style><script>
+ const clean=()=>{document.querySelectorAll('iframe[src*="store.steampowered.com"]').forEach(el=>el.remove());document.querySelectorAll('game-mode-selector button').forEach(b=>{if(b.textContent.trim().toLowerCase()==='ranked')b.style.display='none'});document.querySelectorAll('[data-page="page-leaderboard"]').forEach(b=>{b.onclick=e=>{e.preventDefault();e.stopImmediatePropagation();location.href='/stats/'};});};
+ new MutationObserver(clean).observe(document.documentElement,{childList:true,subtree:true});document.addEventListener('DOMContentLoaded',clean);
+ </script></head>
 
   <body
     class="select-none font-sans min-h-screen bg-neutral-800 transition-opacity duration-300 ease-in-out flex flex-row flex-wrap content-start"
@@ -592,18 +567,10 @@
     </script>
 
     <!-- Analytics -->
-    <script
-      defer
-      src="https://static.cloudflareinsights.com/beacon.min.js"
-      data-cf-beacon='{"token": "03d93e6fefb349c28ee69b408fa25a13"}'
-    ></script>
+
     <script type="module" src="/src/client/Main.ts"></script>
     <footer>
-      <script
-        data-cfasync="false"
-        async
-        src="//cdn.intergient.com/1025558/75940/ramp.js"
-      ></script>
+
     </footer>
   </body>
 </html>

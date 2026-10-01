@@ -594,7 +594,7 @@
     "retry": "Réessayer",
     "starting_link": "Début de la liaison du compte…",
     "ticket_unavailable": "Impossible de démarrer la liaison de compte. Vous pouvez réessayer ou continuer à jouer.",
-    "title": "OpenFront - Configuration du compte"
+    "title": "Exudizmono"
   },
   "desktop_presence": {
     "in_game": "En jeu",
@@ -1285,7 +1285,7 @@
     "solo": "Solo",
     "store": "Boutique",
     "terms_of_service": "Conditions d'utilisation",
-    "title": "OpenFront (ALPHA)",
+    "title": "Exudizmono",
     "troubleshooting": "Dépannage",
     "tutorial": "Tutoriel",
     "user_avatar_alt": "Avatar de {username}",

@@ -1,6 +1,5 @@
 import { LitElement, html } from "lit";
 import { customElement } from "lit/decorators.js";
-import { assetUrl } from "../../core/AssetUrls";
 import "./CosmeticBackground";
 import "./NavAccountMenu";
 import "./NavUtilityIcons";
@@ -58,11 +57,7 @@ export class PlayPage extends LitElement {
             <div
               class="col-start-2 flex items-center justify-center text-malibu-blue min-w-0"
             >
-              <img
-                src=${assetUrl("images/OpenFrontLogo.svg")}
-                alt="OpenFront"
-                class="h-full w-auto"
-              />
+              <a href="https://exudizmono.com/" class="text-white font-bold tracking-widest" style="font-size:clamp(17px,2vw,27px);text-decoration:none" aria-label="Exudizmono home">EXUDIZMONO</a>
             </div>
 
             <!-- Right slot: bell, help, settings and the profile control. The menu is

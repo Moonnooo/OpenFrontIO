@@ -15,3 +15,7 @@ helm-charts
 coverage*
 tests/
 scripts/replay/
+
+proprietary
+.git
+.frontrank-patched

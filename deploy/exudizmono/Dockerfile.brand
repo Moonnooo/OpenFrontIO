@@ -1,0 +1,12 @@
+FROM frontrank-game:standalone
+COPY src/client/components/DesktopNavBar.ts /app/src/client/components/DesktopNavBar.ts
+COPY src/client/components/MobileNavBar.ts /app/src/client/components/MobileNavBar.ts
+COPY src/client/components/PlayPage.ts /app/src/client/components/PlayPage.ts
+COPY src/client/components/Footer.ts /app/src/client/components/Footer.ts
+COPY src/client/ApiBase.ts /app/src/client/ApiBase.ts
+COPY src/client/ClientEnv.ts /app/src/client/ClientEnv.ts
+COPY resources/lang /app/resources/lang
+COPY resources/manifest.json /app/resources/manifest.json
+COPY resources/images/Exudizmono.svg /app/resources/images/Exudizmono.svg
+COPY index.html /app/index.html
+RUN npm run build-prod

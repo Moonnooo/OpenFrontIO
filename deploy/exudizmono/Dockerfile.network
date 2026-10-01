@@ -1,0 +1,3 @@
+FROM frontrank-game:test
+COPY ClientEnv.ts /app/src/client/ClientEnv.ts
+RUN npm run build-prod
