@@ -1,5 +1,5 @@
-import { describe, expect, test } from "vitest";
-import { buildAssetUrl, rewriteAssetsForCdn } from "../src/core/AssetUrls";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import { assetUrl, buildAssetUrl, rewriteAssetsForCdn } from "../src/core/AssetUrls";
 
 describe("AssetUrls", () => {
   test("returns hashed URLs for direct asset matches", () => {
@@ -160,5 +160,45 @@ describe("rewriteAssetsForCdn", () => {
   test("does not match data-src or other custom attributes", () => {
     const html = `<img data-src="/assets/foo.png">`;
     expect(rewriteAssetsForCdn(html)).toBe(html);
+  });
+});
+
+describe("inline worker assets without a CDN", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  function workerScope(cdnBase = "") {
+    vi.stubGlobal("window", undefined);
+    vi.stubGlobal("self", { location: { origin: "https://game.exudizmono.com", href: "blob:https://game.exudizmono.com/test-worker" } });
+    vi.stubGlobal("__CDN_BASE__", cdnBase);
+    vi.stubGlobal("__ASSET_MANIFEST__", {
+      "maps/world/manifest.json": "/_assets/maps/world/manifest.hash.json",
+      "maps/giantworldmap/manifest.json": "/_assets/maps/giantworldmap/manifest.hash.json",
+    });
+  }
+
+  test("resolves solo and multiplayer map manifests from a blob worker", () => {
+    workerScope();
+    for (const map of ["world", "giantworldmap"]) {
+      const url = assetUrl(`maps/${map}/manifest.json`);
+      expect(url).toBe(`https://game.exudizmono.com/_assets/maps/${map}/manifest.hash.json`);
+      expect(() => new URL(url)).not.toThrow();
+    }
+  });
+
+  test("resolves an unmanifested worker asset on the game origin", () => {
+    workerScope();
+    expect(assetUrl("maps/world/map.bin")).toBe("https://game.exudizmono.com/maps/world/map.bin");
+  });
+
+  test("preserves CDN URLs and explicitly absolute URLs", () => {
+    workerScope("https://cdn.example.com");
+    expect(assetUrl("maps/world/manifest.json")).toBe("https://cdn.example.com/_assets/maps/world/manifest.hash.json");
+    expect(assetUrl("https://other.example.com/map.bin")).toBe("https://other.example.com/map.bin");
+  });
+
+  test("keeps document-relative URLs in the browser main thread", () => {
+    workerScope();
+    vi.stubGlobal("window", {});
+    expect(assetUrl("maps/world/manifest.json")).toBe("/_assets/maps/world/manifest.hash.json");
   });
 });

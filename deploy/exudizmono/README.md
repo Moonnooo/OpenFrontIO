@@ -36,3 +36,7 @@ Primary branding is Exudizmono. Original notices remain visible in the footer/lo
 Independent header versions are recorded in resources/fork-version.json. Bump exudizmono for our releases; change upstreamRef/upstreamCommit only after an upstream update.
 
 Profile and leaderboard entry points now open our own /stats/ page. Share links use /stats/?player=PUBLIC_ID#profile-section. The page loads the requested player without replacing them with the viewer’s identity, and shows all-time totals plus up to 50 recent recorded matches. The signed-in account modal redirects to this profile; guest sign-in remains available.
+
+### Worker map loading (Exudizmono 0.1.2)
+
+Inline blob workers resolve hashed map assets and fallback paths against their creator origin. Main-thread paths and explicit CDN URLs are preserved. Regression coverage: `tests/AssetUrls.test.ts` (22 tests). Build this update using `Dockerfile.worker-assets` after the profiles image.

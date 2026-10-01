@@ -1,0 +1,4 @@
+FROM frontrank-game:profiles
+COPY src/core/AssetUrls.ts /app/src/core/AssetUrls.ts
+COPY resources/fork-version.json /app/resources/fork-version.json
+RUN npm run build-prod

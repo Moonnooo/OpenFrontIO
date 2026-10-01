@@ -105,7 +105,21 @@ export function getCdnBase(): string {
 }
 
 export function assetUrl(path: string): string {
-  return buildAssetUrl(path, getAssetManifest(), getCdnBase());
+  const url = buildAssetUrl(path, getAssetManifest(), getCdnBase());
+  // Inline workers run from blob: URLs, which cannot resolve /_assets/ paths.
+  // Their location.origin is the creator's origin. Resolve relative hashed
+  // assets and manifest misses against that origin; preserve explicit CDNs
+  // and the document/server behavior.
+  if (
+    typeof window === "undefined" &&
+    typeof self !== "undefined" &&
+    self.location &&
+    /^https?:\/\//.test(self.location.origin) &&
+    !isAbsoluteUrl(url)
+  ) {
+    return new URL(url, self.location.origin).href;
+  }
+  return url;
 }
 
 // Rewrites Vite's emitted /assets/... references in the built index.html to
