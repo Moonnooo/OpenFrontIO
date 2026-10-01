@@ -38,10 +38,4 @@ private/
 data/
 backups/
 .frontrank-patched
-
-# Independent deployment secrets and state
-runtime.env
-private/
-data/
-backups/
-.frontrank-patched
+signin.env

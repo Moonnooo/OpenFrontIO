@@ -4,6 +4,7 @@ import { ClientEnv } from "src/client/ClientEnv";
 import { PlayerStatsTree, UserMeResponse } from "../core/ApiSchemas";
 import { assetUrl } from "../core/AssetUrls";
 import { hasLinkedIdentity } from "./AccountIdentity";
+import { getApiBase } from "./ApiBase";
 import { fetchPlayerById, getUserMe, invalidateUserMe } from "./Api";
 import {
   discordLogin,
@@ -58,6 +59,7 @@ export class AccountModal extends BaseModal {
   protected routerName = "account";
 
   @state() private email: string = "";
+  @state() private providers = { discord: false, google: false, steam: false, email: false };
   @state() private isLoadingUser: boolean = false;
   // Set on CrazyGames when a CrazyGames user is signed in. Their identity comes
   // from the SDK, not our backend user object.
@@ -204,6 +206,7 @@ export class AccountModal extends BaseModal {
 
   // Email input + "get magic link" button used by the sign-in form.
   private renderEmailField(): TemplateResult {
+    if (!this.providers.email) return html`<p class="text-white/60 text-sm">${translateText("account_modal.email_coming_soon")}</p>`;
     return html`
       <input
         type="email"
@@ -542,7 +545,7 @@ export class AccountModal extends BaseModal {
   // Shown when logged in without a Google identity yet. Lets the user attach
   // Google to their existing account (we never auto-merge by email).
   private renderLinkGoogleButton(): TemplateResult {
-    if (this.userMeResponse?.user?.google) return html``;
+    if (this.userMeResponse?.user?.google || !this.providers.google) return html``;
     return googleLinkButton(
       this.handleLinkGoogle,
       // The shell sends the player to the website for this (see linkGoogle
@@ -565,7 +568,7 @@ export class AccountModal extends BaseModal {
   // Not shown inside the desktop shell: a shell player already holds this
   // identity through the native Steam ticket.
   private renderSteamLink(): TemplateResult {
-    if (isDesktopShell()) return html``;
+    if (isDesktopShell() || !this.providers.steam) return html``;
     const steam = this.userMeResponse?.user?.steam;
     if (steam) {
       // The attached account is NAMED, not merely reported as linked: a wrong
@@ -736,6 +739,7 @@ export class AccountModal extends BaseModal {
           <div class="space-y-6">
             <!-- Discord Login Button -->
             <button
+              ?disabled=${!this.providers.discord}
               @click="${this.handleDiscordLogin}"
               class="w-full px-6 py-4 text-white bg-[#5865F2] hover:bg-[#4752C4] border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5865F2] transition-colors duration-200 flex items-center justify-center gap-3 group relative overflow-hidden shadow-lg hover:shadow-[#5865F2]/20"
             >
@@ -755,6 +759,7 @@ export class AccountModal extends BaseModal {
             <!-- Google Login Button (Google brand guidelines: white surface,
                  dark text, the multicolor "G" mark) -->
             <button
+              ?disabled=${!this.providers.google}
               @click="${this.handleGoogleLogin}"
               class="w-full px-6 py-4 text-[#1f1f1f] bg-white hover:bg-[#f7f8f8] border border-[#dadce0] rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4285F4] transition-colors duration-200 flex items-center justify-center gap-3 group relative overflow-hidden shadow-lg"
             >
@@ -777,6 +782,7 @@ export class AccountModal extends BaseModal {
             ${viaBrowser
               ? nothing
               : html`<button
+                  ?disabled=${!this.providers.steam}
                   @click="${this.handleSteamLogin}"
                   class="w-full px-6 py-4 text-white bg-[#1b2838] hover:bg-[#2a475e] border border-[#66c0f4]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#66c0f4] transition-colors duration-200 flex items-center justify-center gap-3 shadow-lg"
                 >
@@ -786,6 +792,7 @@ export class AccountModal extends BaseModal {
                   >
                 </button>`}
 
+            ${!this.providers.discord || !this.providers.google ? html`<p class="text-white/60 text-sm">${translateText("account_modal.providers_coming_soon")}</p>` : nothing}
             <!-- Divider -->
             <div class="flex items-center gap-4 py-2">
               <div class="h-px bg-white/10 flex-1"></div>
@@ -902,6 +909,13 @@ export class AccountModal extends BaseModal {
   }
 
   protected onOpen(args?: Record<string, unknown>): void {
+    void fetch(`${getApiBase()}/auth/providers`, { credentials: "include" })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const data = await response.json();
+        this.providers = { discord: data.discord === true, google: data.google === true, steam: data.steam === true, email: data.email === true };
+      })
+      .catch(() => { this.providers = { discord: false, google: false, steam: false, email: false }; });
     this.isLoadingUser = true;
     consumeLinkResult(args);
     this.loginError = consumeLoginResult(args);

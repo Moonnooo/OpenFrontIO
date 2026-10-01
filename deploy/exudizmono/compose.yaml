@@ -1,20 +1,24 @@
 services:
  api:
-  image: frontrank-game:exudizmono
+  image: frontrank-game:accounts
   command: ["node", "--import", "tsx", "api.mjs"]
   network_mode: host
-  env_file: runtime.env
+  env_file:
+   - path: runtime.env
+   - path: signin.env
+     required: false
   environment:
    DATA_DIR: /data
   volumes:
    - ./data:/data
    - ./deploy/api.mjs:/app/api.mjs:ro
+   - ./deploy/accounts.mjs:/app/accounts.mjs:ro
   restart: unless-stopped
   mem_limit: 1g
   logging:
    options: {max-size: "10m", max-file: "3"}
  game:
-  image: frontrank-game:exudizmono
+  image: frontrank-game:accounts
   network_mode: host
   env_file: runtime.env
   depends_on: [api]

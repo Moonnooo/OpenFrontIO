@@ -1,0 +1,4 @@
+FROM frontrank-game:exudizmono
+COPY src/client/AccountModal.ts /app/src/client/AccountModal.ts
+COPY resources/lang/en.json /app/resources/lang/en.json
+RUN npm run build-prod

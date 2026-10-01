@@ -140,7 +140,9 @@
     "username_temporary_notice": "Your name was taken by another player. Pick a new one — this rename is free.",
     "username_temporary_prompt": "Your username was taken by another player. Choose a new one now? The rename is free.",
     "username_temporary_prompt_confirm": "Choose a name",
-    "username_title": "Username"
+    "username_title": "Username",
+    "email_coming_soon": "Email sign-in is coming soon.",
+    "providers_coming_soon": "Discord and Google sign-in are coming soon. Available options are enabled below."
   },
   "account_settings_modal": {
     "title": "Account Settings"

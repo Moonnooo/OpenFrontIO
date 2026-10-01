@@ -9,7 +9,7 @@ Independent community game based on OpenFront, with our own guest sessions, VPS 
 
 Fork base: upstream commit e02eeba (1 October 2026). Changes are committed in this fork. Keep the upstream remote for deliberate updates; review and test upstream merges before deployment. The files in deploy/exudizmono document our independent backend and VPS setup. Runtime secrets, identities, private keys and match databases are excluded.
 
-Recorded wins are not a skill rating. Ranked queues, recovery accounts and complete anti-cheat validation remain future work. Original copyright and licensing notices are preserved below and in LICENSE, LICENSE-ASSETS and the live credits page.
+Recorded wins are not a skill rating. Email sign-in links, Discord/Google OAuth and Steam OpenID are implemented; provider availability depends on server configuration. See deploy/exudizmono/SIGN-IN.md. Ranked queues and complete anti-cheat validation remain future work. Original copyright and licensing notices are preserved below and in LICENSE, LICENSE-ASSETS and the live credits page.
 
 ---
 

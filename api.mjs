@@ -1,4 +1,5 @@
 import http from 'node:http';
+import {createAccounts} from './accounts.mjs';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import zlib from 'node:zlib';
@@ -15,6 +16,7 @@ const db=new DatabaseSync(dir+'/stats.sqlite');db.exec(`PRAGMA journal_mode=WAL;
  CREATE TABLE IF NOT EXISTS results(game_id TEXT NOT NULL REFERENCES games(id),player_id TEXT NOT NULL REFERENCES players(id),username TEXT NOT NULL,result TEXT NOT NULL,stats TEXT NOT NULL,PRIMARY KEY(game_id,player_id));`);
 if(!db.prepare('PRAGMA table_info(games)').all().some(c=>c.name==='difficulty'))db.exec("ALTER TABLE games ADD COLUMN difficulty TEXT NOT NULL DEFAULT 'Medium'");
 const issuer=process.env.JWT_ISSUER||process.env.STANDALONE_API_URL;const audience=process.env.DOMAIN;const secret=process.env.API_KEY;if(!secret||!issuer||!audience)throw Error('Missing API configuration');
+const accounts=createAccounts({db,origin:process.env.AUTH_ORIGIN||'https://'+audience,secure:process.env.COOKIE_SECURE==='true'});
 const stringify=body=>JSON.stringify(body,(_k,v)=>typeof v==='bigint'?v.toString():v);
 function respond(res,status,body,headers={}){res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...headers});res.end(stringify(body));}
 async function user(req){const token=req.headers.authorization?.replace(/^Bearer /,'');if(!token)return null;try{const {payload}=await jwtVerify(token,publicKey,{issuer,audience,algorithms:['EdDSA']});const raw=Buffer.from(payload.sub,'base64url').toString('hex');const id=[raw.slice(0,8),raw.slice(8,12),raw.slice(12,16),raw.slice(16,20),raw.slice(20)].join('-');return db.prepare('SELECT * FROM players WHERE id=?').get(id)||null;}catch{return null;}}
@@ -28,8 +30,17 @@ if(!internal){const ip=req.headers['x-real-ip']||req.socket.remoteAddress;const 
 if(req.method==='POST'&&path==='/matchmaking/checkin'&&internal)return respond(res,200,{assignment:null});
 if(req.method==='GET'&&path==='/health')return respond(res,200,{ok:true});
 if(req.method==='GET'&&path==='/.well-known/jwks.json')return respond(res,200,{keys:[publicJwk]});
-if(req.method==='POST'&&path==='/auth/refresh'){if(req.headers.origin&&!['http://77.68.55.16','https://game.exudizmono.com','http://game.exudizmono.com'].includes(req.headers.origin))return respond(res,403,{error:'Wrong origin'});let session=req.headers.cookie?.match(/(?:^|;\s*)frontrank_session=([a-f0-9]{64})(?:;|$)/)?.[1];let p=session?db.prepare('SELECT p.* FROM sessions s JOIN players p ON p.id=s.player_id WHERE s.token=?').get(session):null;let headers={};if(!p){const id=crypto.randomUUID();p={id,public_id:crypto.randomBytes(9).toString('base64url'),created_at:new Date().toISOString(),username:null};session=crypto.randomBytes(32).toString('hex');db.prepare('INSERT INTO players VALUES(?,?,?,?)').run(p.id,p.public_id,null,p.created_at);db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(session,p.id,p.created_at);headers={'Set-Cookie':`frontrank_session=${session}; HttpOnly; SameSite=Lax; Path=/; Max-Age=2592000${process.env.COOKIE_SECURE === "true" ? "; Secure" : ""}`};}const sub=Buffer.from(p.id.replaceAll('-',''),'hex').toString('base64url');const jwt=await new SignJWT({provider:'guest'}).setProtectedHeader({alg:'EdDSA'}).setSubject(sub).setJti(crypto.randomUUID()).setIssuedAt().setIssuer(issuer).setAudience(audience).setExpirationTime('1h').sign(signingKey);return respond(res,200,{jwt,expiresIn:3600},headers);}
-if(req.method==='GET'&&path==='/users/@me'){const p=await user(req);if(!p)return respond(res,401,{error:'Unauthorized'});return respond(res,200,{user:{},player:{publicId:p.public_id,username:null,adfree:true,unlimitedRanked:false,canCreatePublicLobbies:true,trustTier:'untrusted',achievements:{singleplayerMap:[],player:[]},friends:[],clans:[],subscription:null}});}
+if(req.method==='POST'&&path==='/auth/refresh'){
+ const allowedOrigin=process.env.AUTH_ORIGIN||'https://'+audience;
+ if(req.headers.origin&&req.headers.origin!==allowedOrigin)return respond(res,403,{error:'Wrong origin'});
+ let p=accounts.current(req),headers={};
+ if(!p){p=accounts.newPlayer();headers={'Set-Cookie':accounts.session(p,req)};}
+ const sub=Buffer.from(p.id.replaceAll('-',''),'hex').toString('base64url');
+ const jwt=await new SignJWT({provider:accounts.provider(p)}).setProtectedHeader({alg:'EdDSA'}).setSubject(sub).setJti(crypto.randomUUID()).setIssuedAt().setIssuer(issuer).setAudience(audience).setExpirationTime('1h').sign(signingKey);
+ return respond(res,200,{jwt,expiresIn:3600},headers);
+}
+if(await accounts.handle(req,res,u))return;
+if(req.method==='GET'&&path==='/users/@me'){const p=await user(req);if(!p)return respond(res,401,{error:'Unauthorized'});return respond(res,200,{user:accounts.identities(p),player:{publicId:p.public_id,username:null,adfree:true,unlimitedRanked:false,canCreatePublicLobbies:true,trustTier:'untrusted',achievements:{singleplayerMap:[],player:[]},friends:[],clans:[],subscription:null}});}
 if(req.method==='GET'&&path==='/cluster.json')return respond(res,200,{latest:process.env.GIT_COMMIT,servers:{a:{host:process.env.DOMAIN,numWorkers:2,version:process.env.GIT_COMMIT,state:'open'}}});
 if(req.method==='POST'&&/^\/game\/[A-Za-z0-9_-]+$/.test(path)){if(!internal)return respond(res,403,{error:'Server ingestion only'});const body=await readBody(req);if(body.info?.gameID!==path.split('/').at(-1))return respond(res,400,{error:'Game ID mismatch'});return respond(res,200,ingest(body));}
 if(req.method==='GET'&&path==='/leaderboard/recorded'){const mode=u.searchParams.get('mode')||'all';if(!['all','1v1','2v2'].includes(mode))return respond(res,400,{error:'Invalid mode'});const rows=db.prepare(`SELECT p.public_id,p.username,COUNT(*) total,SUM(r.result='victory') wins,SUM(r.result='defeat') losses FROM results r JOIN players p ON p.id=r.player_id JOIN games g ON g.id=r.game_id WHERE g.type!='Singleplayer' AND (?='all' OR g.ranked_type=?) GROUP BY p.id ORDER BY wins DESC,total DESC,p.public_id LIMIT 200`).all(mode,mode);return respond(res,200,{players:rows.map((p,i)=>({...p,rank:i+1})),metric:'recorded wins',mode});}
