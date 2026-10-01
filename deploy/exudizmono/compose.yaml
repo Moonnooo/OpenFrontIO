@@ -13,6 +13,7 @@ services:
    - ./data:/data
    - ./deploy/api.mjs:/app/api.mjs:ro
    - ./deploy/accounts.mjs:/app/accounts.mjs:ro
+   - ./deploy/leaderboards.mjs:/app/leaderboards.mjs:ro
   restart: unless-stopped
   mem_limit: 1g
   logging:

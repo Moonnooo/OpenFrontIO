@@ -40,3 +40,13 @@ Profile and leaderboard entry points now open our own /stats/ page. Share links 
 ### Worker map loading (Exudizmono 0.1.2)
 
 Inline blob workers resolve hashed map assets and fallback paths against their creator origin. Main-thread paths and explicit CDN URLs are preserved. Regression coverage: `tests/AssetUrls.test.ts` (22 tests). Build this update using `Dockerfile.worker-assets` after the profiles image.
+
+### Full leaderboards and skill ratings
+
+Stats UI is the restored FrontRank design at `/stats/`, also published on the original Site. Only Exudizmono public read endpoints are proxied by that Site. Nginx serves `stats.html`, `stats-app.js` (deployed as `public/app.js`) and `stats-style.css` (deployed as `public/style.css`).
+
+`leaderboards.mjs` records base mode, modifiers and complete human counts from server-only archives; existing archives backfill missing mode metadata. Mode-specific pairwise Elo starts at 1000 with K=32 divided across human opponents. FFA compares wins and recorded death positions; team modes compare winning versus losing humans without inventing other teams' final places. Updates are simultaneous from pre-match ratings. The first ten eligible games are provisional. Rounded equal ratings share competition rank. Aggregate views use match-weighted mode ratings, not a separate matchmaking score.
+
+Competitive ratings exclude solo/private/cancelled/cheat-enabled games, humans-vs-nations, records with missing human identities and fewer than two humans, nation victories and malformed ranked roster sizes. Variant filters affect results and visible players; the displayed rating remains the whole-mode rating. Missing placement data permits winner-versus-loser comparisons only. This estimates skill from available outcomes, not a guarantee of player strength. New variant combinations appear from actual game configurations.
+
+Rating tables are deterministically rebuilt chronologically from saved results at startup and ingestion; duplicates cannot award points again. This prioritizes correctness for this initial deployment; large match histories will need incremental chronological updates. All ladder search, sorting, tier filters and pagination preserve global ranks. Live fixtures are never seeded. Isolated verification: `check-rankings.mjs`, `check-ranking-math.mjs`.
