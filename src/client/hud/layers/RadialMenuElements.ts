@@ -620,7 +620,7 @@ const donateGoldRadialElement: MenuElement = {
   },
 };
 
-export const deleteUnitElement: MenuElement = {
+const deleteStructureElement: MenuElement = {
   id: Slot.Delete,
   name: "delete",
   cooldown: (params: MenuElementParams) => params.myPlayer.deleteUnitCooldown(),
@@ -691,6 +691,86 @@ export const deleteUnitElement: MenuElement = {
     }
 
     params.closeMenu();
+  },
+};
+
+function nearbyDeleteStructures(params: MenuElementParams): boolean {
+  return params.myPlayer
+    .units()
+    .some(
+      (unit) =>
+        !unit.isUnderConstruction() &&
+        !unit.markedForDeletion() &&
+        Structures.has(unit.type()) &&
+        params.game.manhattanDist(unit.tile(), params.tile) <= 5,
+    );
+}
+
+export const deleteUnitElement: MenuElement = {
+  ...deleteStructureElement,
+  cooldown: (params) =>
+    params.playerActions?.deletableRailroads?.length
+      ? 0
+      : params.myPlayer.deleteUnitCooldown(),
+  disabled: (params) =>
+    params.playerActions?.deletableRailroads?.length
+      ? false
+      : deleteStructureElement.disabled(params),
+  tooltipKeys: undefined,
+  tooltipItems: [
+    { text: "Delete", className: "title" },
+    {
+      text: "Remove a building or a railway between two buildings. Railway removal is instant.",
+      className: "description",
+    },
+  ],
+  subMenu: (params) => {
+    const rails = params.playerActions?.deletableRailroads ?? [];
+    if (
+      rails.length === 0 ||
+      (rails.length === 1 && !nearbyDeleteStructures(params))
+    )
+      return [];
+    const items: MenuElement[] = rails.map((rail, index) => {
+      const endpoint = (tile: number) => {
+        const unit = params.myPlayer.units().find((u) => u.tile() === tile);
+        return `${unit?.type() ?? "Station"} (${params.game.x(tile)}, ${params.game.y(tile)})`;
+      };
+      return {
+        id: `delete-rail-${rail.id}`,
+        name: `delete-rail-${rail.id}`,
+        icon: xIcon,
+        text: String(index + 1),
+        color: COLORS.delete,
+        disabled: () => false,
+        tooltipItems: [
+          { text: `Remove railway ${index + 1}`, className: "title" },
+          {
+            text: `${endpoint(rail.fromTile)} ↔ ${endpoint(rail.toTile)}. Instant; buildings remain.`,
+            className: "description",
+          },
+        ],
+        action: (p) => {
+          p.playerActionHandler.handleDeleteRailroad(rail.id, p.tile);
+          p.closeMenu();
+        },
+      };
+    });
+    if (nearbyDeleteStructures(params))
+      items.push({
+        ...deleteStructureElement,
+        id: "delete-building",
+        name: "delete-building",
+        text: "B",
+      });
+    return items;
+  },
+  action: (params) => {
+    const rail = params.playerActions?.deletableRailroads?.[0];
+    if (rail) {
+      params.playerActionHandler.handleDeleteRailroad(rail.id, params.tile);
+      params.closeMenu();
+    } else deleteStructureElement.action?.(params);
   },
 };
 

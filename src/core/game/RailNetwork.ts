@@ -1,9 +1,11 @@
-import { Unit, UnitType } from "./Game";
+import { DeletableRailroad, Player, Unit, UnitType } from "./Game";
 import { TileRef } from "./GameMap";
 import { StationManager } from "./RailNetworkImpl";
 import { TrainStation } from "./TrainStation";
 
 export interface RailNetwork {
+  deletableRailroads(player: Player, tile: TileRef): DeletableRailroad[];
+  removeRailroad(player: Player, id: number, tile: TileRef): boolean;
   connectStation(station: TrainStation): void;
   removeStation(unit: Unit): void;
   findStationsPath(from: TrainStation, to: TrainStation): TrainStation[];

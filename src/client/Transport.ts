@@ -156,6 +156,13 @@ export class SendEmbargoAllIntentEvent implements GameEvent {
   constructor(public readonly action: "start" | "stop") {}
 }
 
+export class SendDeleteRailroadIntentEvent implements GameEvent {
+  constructor(
+    public readonly railroadId: number,
+    public readonly tile: TileRef,
+  ) {}
+}
+
 export class SendDeleteUnitIntentEvent implements GameEvent {
   constructor(public readonly unitId: number) {}
 }
@@ -343,6 +350,13 @@ export class Transport {
       this.onMoveWarshipEvent(e);
     });
 
+    this.subscribe(SendDeleteRailroadIntentEvent, (e) =>
+      this.sendIntent({
+        type: "delete_railroad",
+        railroadId: e.railroadId,
+        tile: e.tile,
+      }),
+    );
     this.subscribe(SendDeleteUnitIntentEvent, (e) =>
       this.onSendDeleteUnitIntent(e),
     );

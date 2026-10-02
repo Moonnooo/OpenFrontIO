@@ -1,0 +1,6 @@
+FROM frontrank-game:store
+COPY src /app/src
+COPY resources/fork-version.json /app/resources/fork-version.json
+COPY resources/changelog.md /app/resources/changelog.md
+COPY resources/release-history.json /app/resources/release-history.json
+RUN npm run build-prod

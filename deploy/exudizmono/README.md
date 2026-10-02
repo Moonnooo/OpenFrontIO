@@ -72,3 +72,9 @@ For every feature release: bump resources/fork-version.json, commit the feature,
 ## Store and notifications (0.1.6)
 
 Store is visible with independent cosmetic categories and checkout disabled. The owner has chosen their own Stripe account; credentials, prices and webhook fulfilment are pending. See STORE.md. News dots track the actual release catalog hash and clear only after successful loading. Store dots are disabled. Eight focused notification, storefront and News tests passed.
+
+## Instant railway removal (0.1.7)
+
+Click your railway and choose Delete to remove the complete connection between its two adjacent station buildings. If several connections or a building are nearby, Delete opens a submenu: numbered entries show endpoint buildings/coordinates, and B retains normal building demolition. Railway removal has no demolition timer or building cooldown. Both endpoints must be active buildings owned by the requesting player, and the clicked tile must be owned and within three map tiles of the connection. The server/worker rechecks these conditions when executing the intent. Buildings and other connections remain. Removed rails stay removed until a new station changes automatic network construction. Active trains on the removed segment are removed through the existing train cleanup path. No rail refunds are invented.
+
+The delete_railroad intent, deterministic execution, spatial-grid cleanup, immediate cluster recalculation, destruction event and snapshot registry support both multiplayer and single-player. Tests cover exact segment removal, ownership/range/spawn guards, duplicate deletion, demolition cooldown preservation, active train stopping, junction choices, existing network routing and snapshot compatibility. 49 targeted tests passed; one pre-existing snapshot test remained skipped. TypeScript and production build must pass before deployment.

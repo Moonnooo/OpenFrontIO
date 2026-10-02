@@ -5,7 +5,7 @@ import type {
   SnapshotWriter,
 } from "../snapshot/SnapshotContext";
 import { snapshotType, zInt, zRef } from "../snapshot/SnapshotType";
-import { Game, Unit, UnitType } from "./Game";
+import { DeletableRailroad, Game, Player, Unit, UnitType } from "./Game";
 import { TileRef } from "./GameMap";
 import { GameUpdateType } from "./GameUpdates";
 import { RailNetwork } from "./RailNetwork";
@@ -123,6 +123,51 @@ export class RailNetworkImpl implements RailNetwork {
 
   stationManager(): StationManager {
     return this._stationManager;
+  }
+
+  private removableRails(player: Player, tile: TileRef): Railroad[] {
+    if (
+      !Number.isInteger(tile) ||
+      tile < 0 ||
+      tile >= this.game.map().width() * this.game.map().height() ||
+      this.game.inSpawnPhase()
+    )
+      return [];
+    const owner = this.game.owner(tile);
+    if (!owner.isPlayer() || owner.id() !== player.id()) return [];
+    return [...this.railGrid.query(tile, 3)]
+      .filter(
+        (rail) =>
+          rail.from.isActive() &&
+          rail.to.isActive() &&
+          rail.from.unit.owner() === player &&
+          rail.to.unit.owner() === player &&
+          rail.tiles.some((t) => this.game.manhattanDist(t, tile) <= 3),
+      )
+      .sort((a, b) => a.id - b.id);
+  }
+
+  deletableRailroads(player: Player, tile: TileRef): DeletableRailroad[] {
+    return this.removableRails(player, tile).map((rail) => ({
+      id: rail.id,
+      fromTile: rail.from.tile(),
+      toTile: rail.to.tile(),
+    }));
+  }
+
+  removeRailroad(player: Player, id: number, tile: TileRef): boolean {
+    const rail = this.removableRails(player, tile).find(
+      (rail) => rail.id === id,
+    );
+    if (!rail) return false;
+    const cluster = rail.from.getCluster();
+    if (cluster) this.dirtyClusters.add(cluster);
+    const other = rail.to.getCluster();
+    if (other) this.dirtyClusters.add(other);
+    rail.delete(this.game);
+    this.railGrid.unregister(rail);
+    this.recomputeClusters();
+    return true;
   }
 
   connectStation(station: TrainStation) {

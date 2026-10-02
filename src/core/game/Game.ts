@@ -959,7 +959,14 @@ export interface Game extends GameMap {
   drainNukeImpacts(): TileRef[];
 }
 
+export interface DeletableRailroad {
+  id: number;
+  fromTile: TileRef;
+  toTile: TileRef;
+}
+
 export interface PlayerActions {
+  deletableRailroads?: DeletableRailroad[];
   canAttack: boolean;
   buildableUnits: BuildableUnit[];
   canSendEmojiAllPlayers: boolean;
