@@ -1,10 +1,16 @@
 # Exudizmono release notes
 
-Running Exudizmono **v0.1.6**, based on OpenFront **v0.34.14-79-ge02eeba6**. [Exact upstream source](https://github.com/openfrontio/openfrontio/commit/e02eeba66b4801ebae0b686e1b0e4bc03fbf3654).
+Running Exudizmono **v0.1.7**, based on OpenFront **v0.34.14-79-ge02eeba6**. [Exact upstream source](https://github.com/openfrontio/openfrontio/commit/e02eeba66b4801ebae0b686e1b0e4bc03fbf3654).
 
 Choose OpenFront releases above for all 270 published release notes through **v0.34.14**. This main snapshot also contains commits after that tag; it is not a later tagged release. Release-specific branches are labelled individually. No notes for newer versions are presented as installed.
 
 Exudizmono changes below come from this fork’s actual commits. Dates are UTC.
+
+## Exudizmono v0.1.7
+
+2026-10-02 (UTC)
+
+- Add instant deletion of individual railway connections. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/8bf97991329026d663a87525fefb5e56c9d53681)
 
 ## Exudizmono v0.1.6
 
