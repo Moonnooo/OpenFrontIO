@@ -10,6 +10,7 @@ Exudizmono changes below come from this fork’s actual commits. Dates are UTC.
 
 2026-10-02 (UTC)
 
+- Reduce naval frame bandwidth and bound public lobby capacity. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/a4fd04b339dc11f540f84dfd2d88f7e2a6b252d1)
 - Enable protected naval units in public multiplayer and ranked lobbies. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/07cfdafe6f96e0b7dfcced8916f6b2ad600f6296)
 
 ## Exudizmono v0.2.4
