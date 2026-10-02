@@ -217,5 +217,7 @@ async function runNationGame(minutes: number): Promise<{
 describe("nation gold per minute", () => {
   test("world map, impossible nations, 20 minutes", async () => {
     expect(await runNationGame(20)).toMatchSnapshot();
-  }, 600_000);
+    // Twenty minutes of simulated world history is much slower with V8 coverage.
+    // The assertion still compares the complete economic snapshot.
+  }, 900_000);
 });

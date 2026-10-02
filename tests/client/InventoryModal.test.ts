@@ -287,7 +287,9 @@ function activeSlot(modal: InventoryModal): string | null {
   return active?.dataset.loadoutSlot ?? null;
 }
 
-describe("InventoryModal", () => {
+// Rendering every cosmetic category takes several seconds under coverage.
+// Keep all assertions; allow CPU contention on shared CI runners.
+describe("InventoryModal", { timeout: 15_000 }, () => {
   let modal: InventoryModal;
   let languageFixture: HTMLElement;
 
