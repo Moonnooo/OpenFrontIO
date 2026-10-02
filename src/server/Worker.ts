@@ -453,6 +453,17 @@ export async function startWorker() {
     });
   });
 
+  app.get("/api/game/:id/ranks", async (req, res) => {
+    const game = gm.game(req.params.id);
+    if (!game) return res.status(404).json({ error: "Game not found" });
+    try {
+      res.setHeader("Cache-Control", "no-store");
+      return res.json(await game.playerRanks());
+    } catch {
+      return res.status(503).json({ error: "Ranks temporarily unavailable" });
+    }
+  });
+
   app.get("/api/game/:id", async (req, res) => {
     const game = gm.game(req.params.id);
     if (game === null) {

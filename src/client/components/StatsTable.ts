@@ -1,20 +1,23 @@
-import { LitElement, html, nothing } from "lit";
+import { LitElement, html, nothing, type TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
+import { GameType } from "../../core/game/Game";
 import { UserSettings } from "../../core/game/UserSettings";
 import "../hud/layers/ColumnPicker";
 import {
+  columnsFor,
   type ColumnAlignment,
   type ColumnDef,
-  columnsFor,
 } from "../hud/layers/lib/StatsColumns";
 import { type ColumnId, type StatsTableKind } from "../StatsConstants";
 import { translateText } from "../Utils";
 import type { GameView } from "../view";
+import "./PlayerRankBadge";
 
 export interface StatsRow {
   key: string;
   name: string;
+  clientID?: string | null;
   clanTag?: string | null;
   values: ReadonlyMap<ColumnId, number>;
   emphasized?: boolean;
@@ -241,7 +244,7 @@ export abstract class StatsTable extends LitElement {
   private renderCell(
     column: ColumnDef,
     index: number,
-    text: string,
+    text: string | TemplateResult,
     borderClass: string,
   ) {
     return html`
@@ -281,10 +284,19 @@ export abstract class StatsTable extends LitElement {
             this.renderCell(
               column,
               index,
-              column.cell(
-                { ...row, position, value: row.values.get(column.id) ?? 0 },
-                game,
-              ),
+              column.id === "player" &&
+                row.clientID &&
+                game.config().gameConfig().gameType !== GameType.Singleplayer &&
+                !game.config().gameConfig().anonymizeNames
+                ? html`<span class="truncate">${row.name}</span
+                    ><player-rank-badge
+                      .gameID=${game.gameID()}
+                      .clientID=${row.clientID}
+                    ></player-rank-badge>`
+                : column.cell(
+                    { ...row, position, value: row.values.get(column.id) ?? 0 },
+                    game,
+                  ),
               borderClass,
             ),
         )}
@@ -337,7 +349,12 @@ export abstract class StatsTable extends LitElement {
     // "auto" tracks stay content-sized intrinsically, then split only the
     // spare width supplied by a wider sibling; fixed tracks never stretch.
     const gridTemplate = `${columns
-      .map((column) => column.width)
+      .map((column) =>
+        column.id === "player" &&
+        game.config().gameConfig().gameType !== GameType.Singleplayer
+          ? "180px"
+          : column.width,
+      )
       .join(" ")} ${PICKER_TRACK}`;
     const scrollHeight =
       pinnedRow === null

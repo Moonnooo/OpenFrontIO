@@ -23,6 +23,7 @@ export class PlayerStats extends StatsTable {
       .map((player) => ({
         key: player.id(),
         name: player.name(),
+        clientID: player.clientID(),
         clanTag: player.clanTag(),
         values: columnValues(player, game, columns),
         emphasized:

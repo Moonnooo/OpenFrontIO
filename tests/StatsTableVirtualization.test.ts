@@ -5,6 +5,7 @@ import { UserSettings } from "../src/core/game/UserSettings";
 function player(id: string, tiles: number): PlayerView {
   return {
     id: () => id,
+    clientID: () => null,
     smallID: () => 0,
     name: () => id,
     displayName: () => id,
@@ -26,7 +27,10 @@ function gameWith(players: PlayerView[], me: PlayerView | null): GameView {
   return {
     myPlayer: () => me,
     playerViews: () => players,
-    config: () => ({ maxTroops: () => 100 }),
+    config: () => ({
+      maxTroops: () => 100,
+      gameConfig: () => ({ gameType: "Singleplayer" }),
+    }),
     ticks: () => 600,
     numLandTiles: () => 100,
     numTilesWithFallout: () => 0,

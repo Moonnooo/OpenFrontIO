@@ -15,3 +15,9 @@ Private multiplayer naval games remain an experimental opt-in mode. Standard mul
 Check two opposing players and a spectator: hidden movement, exact sonar boundaries, contact loss, reconnect, owner-only queries, weapon range/cooldowns, allied immunity and server-decided results. Load and bandwidth testing are required before enabling this mode for public matches.
 
 Pushes to GitHub never authorize live deployment. Test the preview first and obtain the owner's explicit approval for each production release.
+
+### Naval purchase controls and skill badges
+
+The ship purchase control keeps hotkey 7. Its selector sits underneath it and opens a menu containing Warship, Submarine, and Sonar ship. Each choice shows its current gold cost and a hover/focus description. Warships use the normal fleet-scaled price; submarines and sonar ships retain the existing 1.5× multiplier. A completed port and sufficient gold are required.
+
+Multiplayer lobby names, in-game player list names, and player info panels show the authenticated account's current skill tier and (after ten rated games) ladder position for the match's mode. Unrated and Provisional are explicit, and a failed lookup displays Rank unavailable rather than inventing a rank. The rank is from Exudizmono's completed public-game stats; private and solo games do not award ranked results. Anonymous-name games suppress rank badges to avoid identifying hidden players. Account IDs are resolved only on the server; the browser receives ranks indexed by match client ID. Requests are batched and cached for one minute; badges show a pre-match snapshot, not live match standings.

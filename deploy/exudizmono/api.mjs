@@ -126,12 +126,12 @@ async function user(req) {
     return null;
   }
 }
-async function readBody(req) {
+async function readBody(req, maxBytes = 64 * 1024 * 1024) {
   let chunks = [],
     length = 0;
   for await (const chunk of req) {
     length += chunk.length;
-    if (length > 64 * 1024 * 1024) throw Error("Body too large");
+    if (length > maxBytes) throw Error("Body too large");
     chunks.push(chunk);
   }
   return JSON.parse(Buffer.concat(chunks).toString());
@@ -327,6 +327,37 @@ http
         if (body.info?.gameID !== path.split("/").at(-1))
           return respond(res, 400, { error: "Game ID mismatch" });
         return respond(res, 200, ingest(body));
+      }
+      if (req.method === "POST" && path === "/public/ranks") {
+        const body = await readBody(req, 32 * 1024);
+        if (
+          !Array.isArray(body.players) ||
+          body.players.length > 200 ||
+          body.players.some(
+            (id) => typeof id !== "string" || !/^[A-Za-z0-9_-]{1,80}$/.test(id),
+          )
+        )
+          return respond(res, 400, { error: "Invalid players" });
+        const rows = ladder(db, {
+          mode: body.mode || "all",
+          limit: Number.MAX_SAFE_INTEGER,
+        }).players;
+        const wanted = new Set(body.players);
+        return respond(res, 200, {
+          players: Object.fromEntries(
+            rows
+              .filter((r) => wanted.has(r.public_id))
+              .map((r) => [
+                r.public_id,
+                {
+                  tier: r.tier,
+                  rank: r.rank,
+                  elo: r.elo,
+                  ratedGames: r.ratedGames,
+                },
+              ]),
+          ),
+        });
       }
       if (req.method === "GET" && path === "/leaderboard/modes")
         return respond(res, 200, modes(db));

@@ -71,6 +71,12 @@ import {
 import { ListingState } from "./ListingState";
 import { identityFor, MatchTelemetryRecorder } from "./MatchTelemetryRecorder";
 import { friendsLookup, NameVisibility } from "./NameVisibility";
+import {
+  lookupRanks,
+  mayShowRanks,
+  rankMode,
+  type PlayerRank,
+} from "./PlayerRanks";
 import { poolTargetFor } from "./PoolRouting";
 import { Roster } from "./Roster";
 import { ServerEnv } from "./ServerEnv";
@@ -1783,6 +1789,33 @@ export class GameServer {
       accent: this.listing.lobbyAccent(),
       featured: this.listing.isFeatured() ? true : undefined,
       queued: this.listing.isQueued() ? true : undefined,
+    };
+  }
+
+  public async playerRanks(): Promise<{
+    mode: string;
+    players: Record<string, PlayerRank>;
+  }> {
+    const mode = rankMode(this.gameConfig);
+    if (!mayShowRanks(this.gameConfig)) return { mode, players: {} };
+    const clients = this.clients.active().filter((c) => !c.spectator);
+    const ranks = await lookupRanks(
+      mode,
+      clients.flatMap((c) => (c.publicId ? [c.publicId] : [])),
+    );
+    return {
+      mode,
+      players: Object.fromEntries(
+        clients.map((c) => [
+          c.clientID,
+          (c.publicId ? ranks[c.publicId] : undefined) ?? {
+            tier: "Unrated",
+            rank: null,
+            elo: null,
+            ratedGames: 0,
+          },
+        ]),
+      ),
     };
   }
 

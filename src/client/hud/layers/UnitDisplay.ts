@@ -45,6 +45,8 @@ export class UnitDisplay extends LitElement implements Controller {
   private _defensePost = 0;
   private _samLauncher = 0;
   private allDisabled = false;
+  private _hoveredNaval: "warship" | "submarine" | "sonar" | null = null;
+  private _navalMenuOpen = false;
   private _hoveredUnit: PlayerBuildableUnitType | null = null;
   private tutorialHighlight: PlayerBuildableUnitType | null = null;
 
@@ -81,14 +83,12 @@ export class UnitDisplay extends LitElement implements Controller {
     this.requestUpdate();
   }
 
-  private cost(item: UnitType): Gold {
+  private cost(item: UnitType, variant = this.uiState?.navalVariant): Gold {
     for (const bu of this.playerBuildables ?? []) {
       if (bu.type === item) {
         return (
           (bu.cost *
-            (item === UnitType.Warship &&
-            this.uiState?.navalVariant &&
-            this.uiState.navalVariant !== "warship"
+            (item === UnitType.Warship && variant && variant !== "warship"
               ? 3n
               : 2n)) /
           2n
@@ -239,6 +239,22 @@ export class UnitDisplay extends LitElement implements Controller {
     }
     const selected = this.uiState.ghostStructure === unitType;
     const hovered = this._hoveredUnit === unitType;
+    const variant =
+      this._hoveredNaval ?? this.uiState.navalVariant ?? "warship";
+    const navalNames = {
+      warship: "Warship",
+      submarine: "Submarine",
+      sonar: "Sonar ship",
+    };
+    const navalDescriptions = {
+      warship: "Surface combat ship. Attacks enemy ships and transport boats.",
+      submarine:
+        "Hidden underwater until detected by enemy sonar. Attacks surface ships.",
+      sonar: "Detects nearby submarines and can launch depth charges.",
+    };
+    const naval =
+      unitType === UnitType.Warship &&
+      navalUnitsEnabled(this.game.config().gameConfig());
     const displayHotkey = hotkey
       .replace("Digit", "")
       .replace("Key", "")
@@ -253,21 +269,28 @@ export class UnitDisplay extends LitElement implements Controller {
         }}
         @mouseleave=${() => {
           this._hoveredUnit = null;
+          this._hoveredNaval = null;
           this.requestUpdate();
         }}
       >
         ${hovered
           ? html`
               <div
-                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 text-gray-200 text-center w-max text-xs bg-gray-800/90 backdrop-blur-xs rounded-sm p-1 z-[100] shadow-lg pointer-events-none"
+                class="${naval && this._navalMenuOpen
+                  ? "absolute bottom-full right-0 mb-40"
+                  : "absolute bottom-full left-1/2 -translate-x-1/2 mb-1"} text-gray-200 text-center w-max max-w-64 text-xs bg-gray-800/90 backdrop-blur-xs rounded-sm p-1 z-[120] shadow-lg pointer-events-none"
               >
                 <div class="font-bold text-sm mb-1">
-                  ${translateText(
-                    "unit_type." + structureKey,
-                  )}${` [${displayHotkey}]`}
+                  ${naval
+                    ? navalNames[variant]
+                    : translateText(
+                        "unit_type." + structureKey,
+                      )}${` [${displayHotkey}]`}
                 </div>
                 <div class="p-2">
-                  ${translateText("build_menu.desc." + structureKey)}
+                  ${naval
+                    ? navalDescriptions[variant]
+                    : translateText("build_menu.desc." + structureKey)}
                 </div>
                 ${unitType === UnitType.Warship
                   ? html`<div
@@ -279,28 +302,13 @@ export class UnitDisplay extends LitElement implements Controller {
                 <div class="flex items-center justify-center gap-1">
                   <img src=${goldCoinIcon} width="13" height="13" />
                   <span class="text-yellow-300"
-                    >${renderNumber(this.cost(unitType))}</span
+                    >${renderNumber(
+                      this.cost(unitType, naval ? variant : undefined),
+                    )}</span
                   >
                 </div>
               </div>
             `
-          : null}
-        ${unitType === UnitType.Warship &&
-        navalUnitsEnabled(this.game.config().gameConfig())
-          ? html`<select
-              aria-label="Naval unit type"
-              class="bg-slate-800 text-white text-xs max-w-28"
-              .value=${this.uiState.navalVariant ?? "warship"}
-              @change=${(event: Event) => {
-                this.uiState.navalVariant = (event.target as HTMLSelectElement)
-                  .value as "warship" | "submarine" | "sonar";
-                this.requestUpdate();
-              }}
-            >
-              <option value="warship">Warship</option>
-              <option value="submarine">Submarine</option>
-              <option value="sonar">Sonar ship</option>
-            </select>`
           : null}
         <div
           class="${this.canBuild(unitType)
@@ -348,6 +356,63 @@ export class UnitDisplay extends LitElement implements Controller {
               : null}
           </div>
         </div>
+        ${naval
+          ? html`
+              <button
+                type="button"
+                aria-label="Choose naval unit"
+                aria-expanded=${this._navalMenuOpen}
+                class="bg-slate-800 text-white text-xs rounded px-1 py-0.5 mt-1 border border-slate-500"
+                @click=${() => {
+                  this._navalMenuOpen = !this._navalMenuOpen;
+                  this.requestUpdate();
+                }}
+              >
+                ${navalNames[this.uiState.navalVariant ?? "warship"]} ▾
+              </button>
+              ${this._navalMenuOpen
+                ? html`<div
+                    role="group"
+                    aria-label="Naval unit types"
+                    class="absolute bottom-full mb-1 right-0 z-[110] min-w-44 bg-slate-900 border border-slate-500 rounded shadow-lg p-1"
+                  >
+                    ${(["warship", "submarine", "sonar"] as const).map(
+                      (choice) =>
+                        html` <button
+                          type="button"
+                          class="w-full flex justify-between gap-3 text-xs text-white rounded px-2 py-2 hover:bg-slate-700 focus:bg-slate-700"
+                          aria-pressed=${(this.uiState.navalVariant ??
+                            "warship") === choice}
+                          title=${`${navalDescriptions[choice]} Cost: ${renderNumber(this.cost(UnitType.Warship, choice))} gold`}
+                          @mouseenter=${() => {
+                            this._hoveredNaval = choice;
+                            this.requestUpdate();
+                          }}
+                          @focus=${() => {
+                            this._hoveredUnit = UnitType.Warship;
+                            this._hoveredNaval = choice;
+                            this.requestUpdate();
+                          }}
+                          @click=${() => {
+                            this.uiState.navalVariant = choice;
+                            this._navalMenuOpen = false;
+                            this._hoveredNaval = null;
+                            this.requestUpdate();
+                          }}
+                        >
+                          <span>${navalNames[choice]}</span
+                          ><span class="text-yellow-300"
+                            >${renderNumber(
+                              this.cost(UnitType.Warship, choice),
+                            )}
+                            gold</span
+                          >
+                        </button>`,
+                    )}
+                  </div>`
+                : null}
+            `
+          : null}
       </div>
     `;
   }

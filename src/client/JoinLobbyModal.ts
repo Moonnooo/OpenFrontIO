@@ -244,6 +244,7 @@ export class JoinLobbyModal extends BaseModal {
                 ${this.players.length > 0
                   ? html`
                       <lobby-player-view
+                        .gameID=${this.currentLobbyId}
                         class="mt-6"
                         .gameMode=${this.gameConfig?.gameMode ?? GameMode.FFA}
                         .clients=${this.players}

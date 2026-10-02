@@ -107,6 +107,7 @@ export function ladder(
     player = null,
     tier = "all",
     sort = "elo",
+    limit = 100,
   } = {},
 ) {
   if (!modes(db).modes.some((m) => m.id === mode)) throw Error("Invalid mode");
@@ -193,7 +194,7 @@ export function ladder(
         : (a.rank ?? Infinity) - (b.rank ?? Infinity),
   );
   return {
-    players: filtered.slice(cursor, cursor + 100),
+    players: filtered.slice(cursor, cursor + limit),
     averageRating: rows.some((p) => p.elo !== null)
       ? Math.round(
           rows.filter((p) => p.elo !== null).reduce((n, p) => n + p.elo, 0) /

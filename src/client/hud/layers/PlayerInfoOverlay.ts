@@ -3,6 +3,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { assetUrl } from "../../../core/AssetUrls";
 import { EventBus } from "../../../core/EventBus";
 import {
+  GameType,
   PlayerProfile,
   PlayerType,
   Relation,
@@ -11,6 +12,7 @@ import {
 } from "../../../core/game/Game";
 import { TileRef } from "../../../core/game/GameMap";
 import { AllianceView } from "../../../core/game/GameUpdates";
+import "../../components/PlayerRankBadge";
 import { Controller } from "../../Controller";
 import {
   ContextMenuEvent,
@@ -509,6 +511,15 @@ export class PlayerInfoOverlay extends LitElement implements Controller {
                 >${player.displayName()}</span
               >
             </div>
+            ${player.type() === PlayerType.Human &&
+            this.game.config().gameConfig().gameType !==
+              GameType.Singleplayer &&
+            !this.game.config().gameConfig().anonymizeNames
+              ? html`<player-rank-badge
+                  .gameID=${this.game.gameID()}
+                  .clientID=${player.clientID()}
+                ></player-rank-badge>`
+              : null}
             ${this.getRelationSmiley(player, myPlayer)}
             ${playerTeam !== "" && player.type() !== PlayerType.Bot
               ? html`<div

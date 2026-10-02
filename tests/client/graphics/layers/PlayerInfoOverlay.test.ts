@@ -80,6 +80,7 @@ describe("PlayerInfoOverlay", () => {
     owner: () => hovered,
     myPlayer: () => myPlayer,
     config: () => ({
+      gameConfig: () => ({ gameType: "Singleplayer" }),
       isUnitDisabled: () => true,
       maxTroops: () => 1000,
     }),

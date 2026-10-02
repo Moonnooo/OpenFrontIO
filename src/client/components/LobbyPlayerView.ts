@@ -22,6 +22,7 @@ import {
   resolveTeamClanTag,
   translateText,
 } from "../Utils";
+import "./PlayerRankBadge";
 
 export interface TeamPreviewData {
   team: Team;
@@ -31,6 +32,7 @@ export interface TeamPreviewData {
 
 @customElement("lobby-player-view")
 export class LobbyTeamView extends LitElement {
+  @property({ type: String }) gameID = "";
   @property({ type: String }) gameMode: GameMode = GameMode.FFA;
   @property({ type: Array }) clients: ClientInfo[] = [];
   @state() private teamPreview: TeamPreviewData[] = [];
@@ -211,7 +213,8 @@ export class LobbyTeamView extends LitElement {
                 ? "bg-malibu-blue/20 border-sky-500/40"
                 : "bg-gray-700/70 border-transparent"}"
             >
-              ${displayName} ${this.renderVerifiedBadge(client)}
+              ${displayName} ${this.renderRank(client)}
+              ${this.renderVerifiedBadge(client)}
               ${this.renderFriendBadge(client)}
             </div>`;
           },
@@ -263,6 +266,15 @@ export class LobbyTeamView extends LitElement {
     </button>`;
   }
 
+  private renderRank(client: ClientInfo) {
+    return this.anonymizeNames
+      ? html``
+      : html`<player-rank-badge
+          .gameID=${this.gameID}
+          .clientID=${client.clientID}
+        ></player-rank-badge>`;
+  }
+
   private renderFreeForAll() {
     return html`${repeat(
       this.activePlayers,
@@ -275,7 +287,8 @@ export class LobbyTeamView extends LitElement {
             : ""}"
         >
           <span class="text-white"
-            >${displayName} ${this.renderVerifiedBadge(client)}
+            >${displayName} ${this.renderRank(client)}
+            ${this.renderVerifiedBadge(client)}
             ${this.renderFriendBadge(client)}</span
           >
           ${this.renderRevealToggle(client.clientID)}
@@ -364,7 +377,7 @@ export class LobbyTeamView extends LitElement {
                   >
                     <span class="flex items-center gap-1 min-w-0">
                       <span class="truncate text-white">${displayName}</span>
-                      ${this.renderVerifiedBadge(p)}
+                      ${this.renderRank(p)} ${this.renderVerifiedBadge(p)}
                       ${this.renderFriendBadge(p)}
                     </span>
                     ${this.renderRevealToggle(p.clientID)}

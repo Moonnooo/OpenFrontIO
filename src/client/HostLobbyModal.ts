@@ -743,6 +743,7 @@ export class HostLobbyModal extends BaseModal {
           ></game-config-settings>
 
           <lobby-player-view
+            .gameID=${this.lobbyId}
             class="mt-10"
             .gameMode=${this.gameMode}
             .clients=${this.clients}

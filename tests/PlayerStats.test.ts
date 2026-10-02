@@ -17,6 +17,7 @@ function player(
 ): PlayerView {
   return {
     id: () => id,
+    clientID: () => null,
     smallID: () => 0,
     name: () => id,
     displayName: () => (clanTag === null ? id : `[${clanTag}] ${id}`),
@@ -47,7 +48,10 @@ describe("PlayerStats", () => {
     const game = {
       myPlayer: () => me,
       playerViews: () => [me],
-      config: () => ({ maxTroops: () => 100 }),
+      config: () => ({
+        maxTroops: () => 100,
+        gameConfig: () => ({ gameType: "Singleplayer" }),
+      }),
       ticks: () => 600,
       numLandTiles: () => 100,
       numTilesWithFallout: () => 0,
@@ -84,7 +88,10 @@ describe("PlayerStats", () => {
     const game = {
       myPlayer: () => players[6],
       playerViews: () => players,
-      config: () => ({ maxTroops: () => 100 }),
+      config: () => ({
+        maxTroops: () => 100,
+        gameConfig: () => ({ gameType: "Singleplayer" }),
+      }),
       ticks: () => 600,
       numLandTiles: () => 100,
       numTilesWithFallout: () => 0,
@@ -141,7 +148,10 @@ describe("PlayerStats", () => {
     const game = {
       myPlayer: () => me,
       playerViews: () => [me],
-      config: () => ({ maxTroops: () => 100 }),
+      config: () => ({
+        maxTroops: () => 100,
+        gameConfig: () => ({ gameType: "Singleplayer" }),
+      }),
       ticks: () => 600,
       numLandTiles: () => 100,
       numTilesWithFallout: () => 0,
@@ -200,7 +210,10 @@ describe("PlayerStats clan column", () => {
     const game = {
       myPlayer: () => players[0],
       playerViews: () => players,
-      config: () => ({ maxTroops: () => 100 }),
+      config: () => ({
+        maxTroops: () => 100,
+        gameConfig: () => ({ gameType: "Singleplayer" }),
+      }),
       ticks: () => 600,
       numLandTiles: () => 100,
       numTilesWithFallout: () => 0,
