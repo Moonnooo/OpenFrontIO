@@ -85,6 +85,8 @@ try {
     },
     turns: [],
   };
+  // Real completed matches may omit optional per-player statistics.
+  delete record.info.players[0].stats;
   const validation = GameRecordSchema.safeParse(record);
   if (!validation.success) throw Error(JSON.stringify(validation.error.issues));
   const post = (key) =>

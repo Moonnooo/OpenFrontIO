@@ -223,7 +223,7 @@ function ingest(record) {
         p.persistentID,
         p.username,
         resultFor(info, p),
-        stringify(p.stats),
+        stringify(p.stats ?? {}),
       );
       db.prepare("UPDATE players SET username=? WHERE id=?").run(
         p.username,
