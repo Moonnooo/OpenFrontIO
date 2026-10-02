@@ -6,7 +6,7 @@ Generated metadata-only commits are excluded from player-facing change history.
 import json, subprocess, urllib.request, re
 from pathlib import Path
 root=Path(__file__).resolve().parents[2]
-def git(*args): return subprocess.check_output(['git','-C',str(root),*args],text=True).strip()
+def git(*args): return subprocess.check_output(['git','-C',str(root),*args],text=True,stderr=subprocess.PIPE).strip()
 version=json.loads((root/'resources/fork-version.json').read_text())
 base=version['upstreamCommit']
 if git('rev-parse','--is-shallow-repository')!='false': raise SystemExit('Fetch full upstream history before generating notes')
@@ -57,4 +57,4 @@ summary=intro+'\n\n'.join(x['markdown'] for x in exudizmono)
 catalog={'summary':summary,'exudizmono':exudizmono,'upstream':upstream,'upstreamCommit':base,'latestAncestorRelease':latest['tag_name']}
 (root/'resources/release-history.json').write_text(json.dumps(catalog,ensure_ascii=False,indent=2)+'\n')
 (root/'resources/changelog.md').write_text(summary+'\n')
-print(f"Generated {len(upstream)} official releases through {latest['tag_name']} and {len(exudizmono)} Exudizmono versions")
+print(f"Generated {len(upstream) - bool(changes)} official releases plus the main snapshot through {latest['tag_name']} and {len(exudizmono)} Exudizmono versions")
