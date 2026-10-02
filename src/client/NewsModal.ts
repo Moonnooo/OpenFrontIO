@@ -3,6 +3,7 @@ import { customElement, property } from "lit/decorators.js";
 import { translateText } from "../client/Utils";
 import { assetUrl } from "../core/AssetUrls";
 import { BaseModal } from "./components/BaseModal";
+import { navNotifications } from "./components/NavNotificationsController";
 import { modalHeader } from "./components/ui/ModalHeader";
 import { renderMarkdown } from "./Markdown";
 import { normalizeNewsMarkdown } from "./NewsMarkdown";
@@ -67,7 +68,7 @@ export class NewsModal extends BaseModal {
       this.initialized = true;
       fetch(assetUrl("release-history.json"))
         .then(async response => { if (!response.ok) throw new Error("Unavailable"); return await response.json() as ReleaseCatalog; })
-        .then(catalog => { this.catalog = catalog; this.selectRelease("exudizmono", "all"); })
+        .then(catalog => { this.catalog = catalog; this.selectRelease("exudizmono", "all"); navNotifications.markNewsRead(); })
         .catch(() => { this.initialized = false; this.markdown = "Release notes could not be loaded. Please reopen News to retry."; });
     }
   }

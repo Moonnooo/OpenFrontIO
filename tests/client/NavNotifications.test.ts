@@ -6,14 +6,14 @@ const { getCosmeticsHash, getGamesPlayed } = vi.hoisted(() => ({
 }));
 vi.mock("../../src/client/Cosmetics", () => ({ getCosmeticsHash }));
 vi.mock("../../src/client/Utils", () => ({ getGamesPlayed }));
-vi.mock("resources/version.txt?raw", () => ({ default: "v9.9.9" }));
+vi.mock("../../src/core/AssetUrls", () => ({ assetUrl: () => "/_assets/release-history.rev2.json" }));
 
 import {
   NavNotificationsController,
   navNotifications,
 } from "../../src/client/components/NavNotificationsController";
 
-// Two components with their own controller — the bell lives in
+// Two components with their own controller â€” the bell lives in
 // <nav-utility-icons>, the store dot in the nav bars.
 function host() {
   const requestUpdate = vi.fn();
@@ -34,7 +34,7 @@ describe("nav notifications", () => {
     localStorage.clear();
     // Seen an older version and an older cosmetics hash: news and store both
     // have something new.
-    localStorage.setItem("newsSeenVersion", "v9.9.8");
+    localStorage.setItem("exudizmono.releaseNotesSeen", "/_assets/release-history.rev1.json");
     localStorage.setItem("storeSeenHash", "hash-1");
   });
 
@@ -43,7 +43,7 @@ describe("nav notifications", () => {
     localStorage.clear();
   });
 
-  it("shares state across components, so dismissing news reveals the store dot", async () => {
+  it("shares read state across components without showing Store notifications", async () => {
     const bell = host();
     const navBar = host();
     // Let the cosmetics-hash fetch settle.
@@ -56,10 +56,10 @@ describe("nav notifications", () => {
 
     // Dismissing the bell used to leave the nav bar's own copy of
     // hasNewVersion set, suppressing the store dot until a reload.
-    bell.controller.onNewsClick();
+    navNotifications.markNewsRead();
 
     expect(bell.controller.showNewsDot()).toBe(false);
-    expect(navBar.controller.showStoreDot()).toBe(true);
+    expect(navBar.controller.showStoreDot()).toBe(false);
     // Both components re-render off the shared state.
     expect(navBar.requestUpdate).toHaveBeenCalled();
   });
@@ -70,9 +70,18 @@ describe("nav notifications", () => {
     await Promise.resolve();
 
     expect(bell.controller.showHelpDot()).toBe(false);
-    bell.controller.onNewsClick();
-    expect(bell.controller.showHelpDot()).toBe(false); // store still pending
+    navNotifications.markNewsRead();
+    expect(bell.controller.showHelpDot()).toBe(true); // Store never suppresses Help
     bell.controller.onStoreClick();
     expect(bell.controller.showHelpDot()).toBe(true);
   });
+  it("starts unread on a first visit and clears only after successful reading", () => {
+    localStorage.removeItem("exudizmono.releaseNotesSeen"); const bell=host();
+    expect(bell.controller.showNewsDot()).toBe(true);
+    bell.controller.onNewsClick(); expect(bell.controller.showNewsDot()).toBe(true);
+    navNotifications.markNewsRead(); expect(bell.controller.showNewsDot()).toBe(false);
+    expect(localStorage.getItem("exudizmono.releaseNotesSeen")).toBe("/_assets/release-history.rev2.json");
+    navNotifications.reset(); expect(host().controller.showNewsDot()).toBe(false);
+  });
+
 });

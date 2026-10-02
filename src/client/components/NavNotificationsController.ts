@@ -1,33 +1,22 @@
 import { ReactiveController, ReactiveControllerHost } from "lit";
-import version from "resources/version.txt?raw";
-import { getCosmeticsHash } from "../Cosmetics";
+import { assetUrl } from "../../core/AssetUrls";
 import { getGamesPlayed } from "../Utils";
 
 const HELP_SEEN_KEY = "helpSeen";
-const STORE_SEEN_HASH_KEY = "storeSeenHash";
-const NEWS_SEEN_VERSION_KEY = "newsSeenVersion";
+const NEWS_SEEN_VERSION_KEY = "exudizmono.releaseNotesSeen";
 
 function normalizedVersion(): string {
-  const trimmed = version.trim();
-  return trimmed.startsWith("v") ? trimmed : `v${trimmed}`;
+  return assetUrl("release-history.json");
 }
 
-/**
- * Shared dot state for the nav.
- *
- * One store, not one per component: the dots are prioritised against each
- * other (news > store > help), and the affordances now live in different
- * components — the bell and "?" in <nav-utility-icons>, the store in the nav
- * bars. With per-component state, dismissing the bell left the other
- * components' copy of `hasNewVersion` set, so the store dot stayed suppressed
- * until a reload.
+/** Shared unread release state across desktop and mobile navigation.
+ * Store notifications are disabled; catalogue changes do not mark News unread.
  */
 class NavNotificationsStore {
   private hosts = new Set<ReactiveControllerHost>();
   private loaded = false;
 
   private _helpSeen = false;
-  private _hasNewCosmetics = false;
   private _hasNewVersion = false;
 
   subscribe(host: ReactiveControllerHost): void {
@@ -50,31 +39,19 @@ class NavNotificationsStore {
 
     this._helpSeen = localStorage.getItem(HELP_SEEN_KEY) === "true";
 
-    getCosmeticsHash()
-      .then((hash: string | null) => {
-        const seenHash = localStorage.getItem(STORE_SEEN_HASH_KEY);
-        this._hasNewCosmetics = hash !== null && hash !== seenHash;
-        this.notify();
-      })
-      .catch(() => {});
-
     const currentVersion = normalizedVersion();
     const seenVersion = localStorage.getItem(NEWS_SEEN_VERSION_KEY);
-    this._hasNewVersion =
-      seenVersion !== null && seenVersion !== currentVersion;
-    if (seenVersion === null) {
-      localStorage.setItem(NEWS_SEEN_VERSION_KEY, currentVersion);
-    }
+    this._hasNewVersion = seenVersion !== currentVersion;
   }
 
   // Only show one dot at a time to prevent
-  // overwhelming users. Priority: News > Store > Help.
+  // overwhelming users. Priority: News > Help.
   showNewsDot(): boolean {
     return this._hasNewVersion;
   }
 
   showStoreDot(): boolean {
-    return this._hasNewCosmetics && !this.showNewsDot();
+    return false;
   }
 
   showHelpDot(): boolean {
@@ -86,23 +63,16 @@ class NavNotificationsStore {
     );
   }
 
-  onNewsClick = (): void => {
+  // Opening the panel is not proof its notes loaded successfully.
+  onNewsClick = (): void => {};
+
+  markNewsRead = (): void => {
     this._hasNewVersion = false;
     localStorage.setItem(NEWS_SEEN_VERSION_KEY, normalizedVersion());
     this.notify();
   };
 
-  onStoreClick = (): void => {
-    this._hasNewCosmetics = false;
-    getCosmeticsHash()
-      .then((hash: string | null) => {
-        if (hash !== null) {
-          localStorage.setItem(STORE_SEEN_HASH_KEY, hash);
-        }
-      })
-      .catch(() => {});
-    this.notify();
-  };
+  onStoreClick = (): void => {};
 
   onHelpClick = (): void => {
     localStorage.setItem(HELP_SEEN_KEY, "true");
@@ -115,7 +85,6 @@ class NavNotificationsStore {
     this.hosts.clear();
     this.loaded = false;
     this._helpSeen = false;
-    this._hasNewCosmetics = false;
     this._hasNewVersion = false;
   }
 }

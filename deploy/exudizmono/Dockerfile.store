@@ -1,0 +1,9 @@
+FROM frontrank-game:releases
+COPY index.html /app/index.html
+COPY src/client/Store.ts /app/src/client/Store.ts
+COPY src/client/NewsModal.ts /app/src/client/NewsModal.ts
+COPY src/client/components/NavNotificationsController.ts /app/src/client/components/NavNotificationsController.ts
+COPY resources/fork-version.json /app/resources/fork-version.json
+COPY resources/changelog.md /app/resources/changelog.md
+COPY resources/release-history.json /app/resources/release-history.json
+RUN npm run build-prod
