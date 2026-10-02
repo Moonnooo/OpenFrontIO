@@ -16,6 +16,7 @@ import { TileRef } from "../../../core/game/GameMap";
 import {
   DEPTH_CHARGE_COOLDOWN,
   DEPTH_CHARGE_RANGE,
+  navalUnitsEnabled,
 } from "../../../core/game/NavalCombat";
 import { Emoji, findClosestBy, flattenedEmojiTable } from "../../../core/Util";
 import { UIState } from "../../UIState";
@@ -885,7 +886,7 @@ export const depthChargeElement: MenuElement = {
 function availableSonar(params: MenuElementParams) {
   if (
     params.game.inSpawnPhase() ||
-    !params.game.config().gameConfig().authoritativeNaval ||
+    !navalUnitsEnabled(params.game.config().gameConfig()) ||
     params.game.isLand(params.tile)
   )
     return undefined;
@@ -948,7 +949,7 @@ export const rootMenuElement: MenuElement = {
         : [
             isAllied && !isDisconnected
               ? allyBreakElement
-              : params.game.config().gameConfig().authoritativeNaval &&
+              : navalUnitsEnabled(params.game.config().gameConfig()) &&
                   !params.game.isLand(params.tile)
                 ? navalActionElement
                 : boatMenuElement,

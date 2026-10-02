@@ -8,6 +8,7 @@ import {
   PlayerBuildableUnitType,
   UnitType,
 } from "../../../core/game/Game";
+import { navalUnitsEnabled } from "../../../core/game/NavalCombat";
 import { UserSettings } from "../../../core/game/UserSettings";
 import { Controller } from "../../Controller";
 import { ToggleStructureEvent } from "../../InputHandler";
@@ -285,7 +286,7 @@ export class UnitDisplay extends LitElement implements Controller {
             `
           : null}
         ${unitType === UnitType.Warship &&
-        this.game.config().gameConfig().authoritativeNaval
+        navalUnitsEnabled(this.game.config().gameConfig())
           ? html`<select
               aria-label="Naval unit type"
               class="bg-slate-800 text-white text-xs max-w-28"

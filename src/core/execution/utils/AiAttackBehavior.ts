@@ -17,6 +17,7 @@ import {
   UnitType,
 } from "../../game/Game";
 import { TileRef } from "../../game/GameMap";
+import { canSeeNavalUnit, navalUnitsEnabled } from "../../game/NavalCombat";
 import {
   canBuildTransportShip,
   targetTransportTile,
@@ -1586,6 +1587,8 @@ export class AiAttackBehavior {
       .filter(
         (w) =>
           w.owner() !== this.player &&
+          (!navalUnitsEnabled(this.game.config().gameConfig()) ||
+            canSeeNavalUnit(this.game, this.player, w)) &&
           !w.isUnderConstruction() &&
           w.warshipState().state !== "docked" &&
           w.owner().canAttackPlayer(this.player, true),

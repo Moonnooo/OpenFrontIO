@@ -27,7 +27,9 @@ import { TileRef } from "./game/GameMap";
 import { GameMapLoader } from "./game/GameMapLoader";
 import { ErrorUpdate, GameUpdateViewData } from "./game/GameUpdates";
 import { createNationsForGame } from "./game/NationCreation";
+import { navalUnitsEnabled } from "./game/NavalCombat";
 import { loadTerrainMap as loadGameMap } from "./game/TerrainMapLoader";
+import { AuthoritativeView } from "./net/AuthoritativeView";
 import { PseudoRandom } from "./PseudoRandom";
 import { ClientID, GameStartInfo, Turn } from "./Schemas";
 import {
@@ -91,7 +93,7 @@ export async function createGameRunner(
       clientID,
       gameStart.tribes?.map((t) => t.name),
     ),
-    callBack,
+    soloNavalCallback(game, clientID, callBack),
   );
   gr.init();
   return gr;
@@ -133,7 +135,7 @@ export async function createGameRunnerFromSnapshot(
       clientID,
       gameStart.tribes?.map((t) => t.name),
     ),
-    callBack,
+    soloNavalCallback(game, clientID, callBack),
   );
 }
 
@@ -390,4 +392,28 @@ export class GameRunner {
     }
     return player.bestTransportShipSpawn(targetTile);
   }
+}
+
+function soloNavalCallback(
+  game: Game,
+  clientID: ClientID | undefined,
+  callback: (frame: GameUpdateViewData | ErrorUpdate) => void,
+) {
+  if (
+    game.config().gameConfig().gameType !== GameType.Singleplayer ||
+    !navalUnitsEnabled(game.config().gameConfig()) ||
+    clientID === undefined
+  )
+    return callback;
+  const projection = new AuthoritativeView();
+  return (frame: GameUpdateViewData | ErrorUpdate) =>
+    callback(
+      "updates" in frame
+        ? projection.project(
+            game,
+            game.playerByClientID(clientID) ?? undefined,
+            frame,
+          )
+        : frame,
+    );
 }

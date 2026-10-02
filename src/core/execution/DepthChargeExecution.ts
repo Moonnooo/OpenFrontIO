@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Execution, Game, Player } from "../game/Game";
 import { TileRef } from "../game/GameMap";
-import { launchDepthCharge } from "../game/NavalCombat";
+import { launchDepthCharge, navalUnitsEnabled } from "../game/NavalCombat";
 import { execSnapshotType } from "../snapshot/ExecutionSnapshot";
 import {
   ExecRecord,
@@ -16,7 +16,7 @@ export class DepthChargeExecution implements Execution {
     private tile: TileRef,
   ) {}
   init(game: Game): void {
-    if (game.config().gameConfig().authoritativeNaval === true)
+    if (navalUnitsEnabled(game.config().gameConfig()))
       launchDepthCharge(game, this.player, this.shipId, this.tile);
   }
   tick(): void {}

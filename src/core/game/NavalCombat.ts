@@ -1,4 +1,4 @@
-import { Game, Player, Unit, UnitType } from "./Game";
+import { Game, GameType, Player, Unit, UnitType } from "./Game";
 import { TileRef } from "./GameMap";
 export const SONAR_RADIUS = 45;
 export const DEPTH_CHARGE_RANGE = 55;
@@ -85,4 +85,16 @@ export function launchDepthCharge(
     if (damage > 0) unit.modifyHealth(-damage, player);
   }
   return true;
+}
+
+/** Local naval units are permitted only in solo games; multiplayer requires server authority. */
+export function navalUnitsEnabled(config: {
+  authoritativeNaval?: boolean;
+  navalUnits?: boolean;
+  gameType?: GameType;
+}): boolean {
+  return (
+    config.authoritativeNaval === true ||
+    (config.gameType === GameType.Singleplayer && config.navalUnits === true)
+  );
 }

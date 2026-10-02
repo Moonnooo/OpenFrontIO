@@ -46,6 +46,8 @@ describe("SinglePlayerModal start", () => {
     expect(events[0].source).toBe("singleplayer");
     const config = events[0].gameStartInfo.config;
     expect(config.playerTeams).toBe(4);
+    expect(config.navalUnits).toBe(true);
+    expect(config.authoritativeNaval).not.toBe(true);
     expect(config.disabledUnits).toEqual([UnitType.Warship]);
   });
 });

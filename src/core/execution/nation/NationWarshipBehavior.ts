@@ -10,6 +10,7 @@ import {
   UnitType,
 } from "../../game/Game";
 import { TileRef } from "../../game/GameMap";
+import { canSeeNavalUnit, navalUnitsEnabled } from "../../game/NavalCombat";
 import { PseudoRandom } from "../../PseudoRandom";
 import type {
   SnapshotReader,
@@ -368,6 +369,19 @@ export class NationWarshipBehavior {
     }
   }
 
+  private canSeeWarship(unit: Unit): boolean {
+    return (
+      !navalUnitsEnabled(this.game.config().gameConfig()) ||
+      canSeeNavalUnit(this.game, this.player, unit)
+    );
+  }
+
+  private visibleWarships(owner: Player): Unit[] {
+    return owner
+      .units(UnitType.Warship)
+      .filter((unit) => this.canSeeWarship(unit));
+  }
+
   private hostileWarshipsNear(tile: TileRef): number {
     return this.game
       .nearbyUnits(
@@ -375,8 +389,11 @@ export class NationWarshipBehavior {
         this.game.config().warshipTargettingRange(),
         UnitType.Warship,
       )
-      .filter(({ unit }) => unit.owner().canAttackPlayer(this.player, true))
-      .length;
+      .filter(
+        ({ unit }) =>
+          unit.owner().canAttackPlayer(this.player, true) &&
+          this.canSeeWarship(unit),
+      ).length;
   }
 
   // Our warships on the same water whose patrol area includes `tile`
@@ -514,7 +531,7 @@ export class NationWarshipBehavior {
       if (team === null) continue;
 
       const teamKey = team.toString();
-      const warshipCount = p.units(UnitType.Warship).length;
+      const warshipCount = this.visibleWarships(p).length;
 
       if (!enemyTeamWarships.has(teamKey)) {
         enemyTeamWarships.set(teamKey, {
@@ -534,15 +551,15 @@ export class NationWarshipBehavior {
         // Find player in that team with most warships
         const playerWithMostWarships = teamData.players.reduce(
           (max, p) => {
-            const count = p.units(UnitType.Warship).length;
-            const maxCount = max ? max.units(UnitType.Warship).length : 0;
+            const count = this.visibleWarships(p).length;
+            const maxCount = max ? this.visibleWarships(max).length : 0;
             return count > maxCount ? p : max;
           },
           null as Player | null,
         );
 
         if (playerWithMostWarships) {
-          const warships = playerWithMostWarships.units(UnitType.Warship);
+          const warships = this.visibleWarships(playerWithMostWarships);
           if (warships.length > 3) {
             return {
               player: playerWithMostWarships,
@@ -565,7 +582,7 @@ export class NationWarshipBehavior {
       .filter((p) => !this.player.isFriendly(p) && p.id() !== this.player.id());
 
     for (const enemy of enemies) {
-      const enemyWarships = enemy.units(UnitType.Warship);
+      const enemyWarships = this.visibleWarships(enemy);
       if (enemyWarships.length > 10) {
         return {
           player: enemy,

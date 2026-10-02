@@ -1136,6 +1136,7 @@ export class SinglePlayerModal extends BaseModal {
                   ? GameMapSize.Compact
                   : GameMapSize.Normal,
                 gameType: GameType.Singleplayer,
+                navalUnits: true,
                 gameMode: this.gameMode,
                 playerTeams: this.teamCount,
                 difficulty: this.selectedDifficulty,

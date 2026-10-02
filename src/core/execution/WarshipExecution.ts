@@ -12,6 +12,7 @@ import { TileRef } from "../game/GameMap";
 import {
   canSeeNavalUnit,
   isSubmarine,
+  navalUnitsEnabled,
   TORPEDO_COOLDOWN,
 } from "../game/NavalCombat";
 import { WaterPathFinder } from "../pathfinding/PathFinder";
@@ -65,7 +66,7 @@ export class WarshipExecution implements Execution {
       const variant = this.input.navalVariant ?? "warship";
       if (
         variant !== "warship" &&
-        this.mg.config().gameConfig().authoritativeNaval !== true
+        !navalUnitsEnabled(this.mg.config().gameConfig())
       )
         return;
       const cost =

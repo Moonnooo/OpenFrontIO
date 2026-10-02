@@ -42,6 +42,7 @@ import { NationStructureBehavior } from "./nation/NationStructureBehavior";
 import { NationWarshipBehavior } from "./nation/NationWarshipBehavior";
 import { SpawnExecution } from "./SpawnExecution";
 import { AiAttackBehavior } from "./utils/AiAttackBehavior";
+import { tickNavalAI } from "./utils/AiNavalBehavior";
 
 export class NationExecution implements Execution {
   private active = true;
@@ -107,6 +108,7 @@ export class NationExecution implements Execution {
   }
 
   tick(ticks: number) {
+    if (this.player) tickNavalAI(this.mg, this.player, ticks);
     // Ship tracking
     if (
       this.behaviorsInitialized &&
