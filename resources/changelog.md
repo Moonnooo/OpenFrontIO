@@ -10,6 +10,7 @@ Exudizmono changes below come from this fork’s actual commits. Dates are UTC.
 
 2026-10-02 (UTC)
 
+- Accept archived players without optional stats so skill results are recorded. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/473a35353b572afd58c6272a506aa0f1b3ec4e9d)
 - Hide eliminated player names immediately and normalize clan invite edits. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/308164c36e055ac0eaab7075420201749302bb65)
 
 ## Exudizmono v0.2.3
