@@ -210,10 +210,10 @@ export async function buildPreview(
   const gameTypeLabel = gameType ? ` (${gameType})` : "";
 
   const title = isFinished
-    ? `${mode ?? "Game"} on ${map ?? "Unknown Map"}${gameTypeLabel}`
+    ? `Exudizmono — ${mode ?? "Game"} on ${map ?? "Unknown Map"}${gameTypeLabel}`
     : mode && map
-      ? `${mode} on ${map}${gameTypeLabel}`
-      : "OpenFront Game";
+      ? `Exudizmono — ${mode} on ${map}${gameTypeLabel}`
+      : "Exudizmono Game";
 
   let description: string;
   if (isFinished) {
