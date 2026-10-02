@@ -1,15 +1,22 @@
 # Exudizmono release notes
 
-Running Exudizmono **v0.2.3**, based on OpenFront **v0.34.14-79-ge02eeba6**. [Exact upstream source](https://github.com/openfrontio/openfrontio/commit/e02eeba66b4801ebae0b686e1b0e4bc03fbf3654).
+Running Exudizmono **v0.2.4**, based on OpenFront **v0.34.14-79-ge02eeba6**. [Exact upstream source](https://github.com/openfrontio/openfrontio/commit/e02eeba66b4801ebae0b686e1b0e4bc03fbf3654).
 
 Choose OpenFront releases above for all 270 published release notes through **v0.34.14**. This main snapshot also contains commits after that tag; it is not a later tagged release. Release-specific branches are labelled individually. No notes for newer versions are presented as installed.
 
 Exudizmono changes below come from this fork’s actual commits. Dates are UTC.
 
+## Exudizmono v0.2.4
+
+2026-10-02 (UTC)
+
+- Hide eliminated player names immediately and normalize clan invite edits. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/308164c36e055ac0eaab7075420201749302bb65)
+
 ## Exudizmono v0.2.3
 
 2026-10-02 (UTC)
 
+- Refresh release notes and validate public-only skill results. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/155d5d302b1e4afc9f8fe7eab65baa56b78c6df3)
 - Prepare full v0.2.3 promotion and fix sidebar CI fixture. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/efc4d5fbe229229105426946f0aab800eca3160a)
 - Record branding-only live deployment. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/3ccfe011b2b53359bdd4519f185baa48e79dbce7)
 - Brand social share previews as Exudizmono. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/22eca945d39a1833c8f16199be95cfbda5b356f0)
