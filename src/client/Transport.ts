@@ -816,6 +816,13 @@ export class Transport {
   }
 
   leaveGame() {
+    this.authoritativeReceiver = undefined;
+    this.authoritativeFrames = [];
+    for (const query of this.authoritativeQueries.values()) {
+      clearTimeout(query.timer);
+      query.reject(new Error("Game left"));
+    }
+    this.authoritativeQueries.clear();
     for (const unsubscribe of this.unsubscribers.splice(0)) {
       unsubscribe();
     }

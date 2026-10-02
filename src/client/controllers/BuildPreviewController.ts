@@ -205,7 +205,10 @@ export class BuildPreviewController implements Controller {
     if (!this.ghostUnit) return;
 
     const now = performance.now();
-    if (now - this.lastGhostQueryAt < 50) return;
+    const queryInterval = this.game.config().gameConfig().authoritativeNaval
+      ? 100
+      : 50;
+    if (now - this.lastGhostQueryAt < queryInterval) return;
     this.lastGhostQueryAt = now;
     let tileRef: TileRef | undefined;
     let trajectoryTileRef: TileRef | undefined;

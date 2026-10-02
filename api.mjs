@@ -255,7 +255,7 @@ http
           servers: {
             a: {
               host: process.env.DOMAIN,
-              numWorkers: 2,
+              numWorkers: Number(process.env.NUM_WORKERS ?? 2),
               version: process.env.GIT_COMMIT,
               state: "open",
             },
@@ -327,7 +327,11 @@ http
       if (req.method === "GET" && path === "/cosmetics.json")
         return respond(res, 200, { patterns: {}, flags: {} });
       if (req.method === "GET" && path === "/streams.json")
-        return respond(res, 200, {});
+        return respond(res, 200, {
+          verifiedAt: new Date().toISOString(),
+          featured: [],
+          live: [],
+        });
       return respond(res, 404, {
         error: "Not available on this independent test server",
       });
