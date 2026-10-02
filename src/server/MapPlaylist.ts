@@ -37,11 +37,32 @@ const CROWDED_PLAYER_COUNT = 125;
 // trusted slot aliases onto a single game type.
 const TRUSTED_PUBLIC_EVERY = 7;
 
-function publicNavalConfig(): Partial<GameConfig> {
-  return process.env.ENABLE_AUTHORITATIVE_NAVAL === "true" &&
-    process.env.ENABLE_PUBLIC_AUTHORITATIVE_NAVAL === "true"
-    ? { authoritativeNaval: true }
-    : {};
+function publicNavalConfig(
+  maxPlayers: number,
+  playerTeams?: TeamCountConfig,
+): Partial<GameConfig> {
+  if (
+    process.env.ENABLE_AUTHORITATIVE_NAVAL !== "true" ||
+    process.env.ENABLE_PUBLIC_AUTHORITATIVE_NAVAL !== "true"
+  )
+    return {};
+  // These games run on the server rather than each player's computer. Keep
+  // initial public lobbies within the validated budget and preserve team sizes.
+  const group =
+    typeof playerTeams === "number"
+      ? playerTeams
+      : playerTeams === Duos
+        ? 2
+        : playerTeams === Trios
+          ? 3
+          : playerTeams === Quads
+            ? 4
+            : 1;
+  const capacity = Math.min(maxPlayers, 24);
+  return {
+    authoritativeNaval: true,
+    maxPlayers: Math.max(group, Math.floor(capacity / group) * group),
+  };
 }
 
 // Trusted-only lobbies draw from a much smaller pool of eligible accounts, so
@@ -195,7 +216,10 @@ export class MapPlaylist {
       gameMap: map,
       maxPlayers: this.adjustForTeams(unadjustedMaxPlayers, playerTeams),
       gameType: GameType.Public,
-      ...publicNavalConfig(),
+      ...publicNavalConfig(
+        this.adjustForTeams(unadjustedMaxPlayers, playerTeams),
+        playerTeams,
+      ),
       gameMapSize: isCompact ? GameMapSize.Compact : GameMapSize.Normal,
       publicGameModifiers: {
         isCompact,
@@ -444,7 +468,7 @@ export class MapPlaylist {
       gameMap: map,
       maxPlayers,
       gameType: GameType.Public,
-      ...publicNavalConfig(),
+      ...publicNavalConfig(maxPlayers, playerTeams),
       gameMapSize: isCompact ? GameMapSize.Compact : GameMapSize.Normal,
       publicGameModifiers: {
         isCompact,
@@ -511,7 +535,7 @@ export class MapPlaylist {
       gameMap: maps[Math.floor(Math.random() * maps.length)],
       maxPlayers: 2,
       gameType: GameType.Public,
-      ...publicNavalConfig(),
+      ...publicNavalConfig(2),
       gameMapSize: isCompact ? GameMapSize.Compact : GameMapSize.Normal,
       difficulty: Difficulty.Medium, // Doesn't matter, nations are disabled
       rankedType: RankedType.OneVOne,
@@ -543,7 +567,7 @@ export class MapPlaylist {
       gameMap: maps[Math.floor(Math.random() * maps.length)],
       maxPlayers: 4,
       gameType: GameType.Public,
-      ...publicNavalConfig(),
+      ...publicNavalConfig(4, 2),
       gameMapSize: isCompact ? GameMapSize.Compact : GameMapSize.Normal,
       difficulty: Difficulty.Medium, // Doesn't matter, nations are disabled
       rankedType: RankedType.TwoVTwo,

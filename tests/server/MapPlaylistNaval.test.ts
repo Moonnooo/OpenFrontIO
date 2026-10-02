@@ -26,6 +26,11 @@ describe("public naval matchmaking", () => {
       for (const config of configs) {
         expect(GameConfigSchema.safeParse(config).success).toBe(true);
         expect(config.authoritativeNaval === true).toBe(enabled);
+        if (enabled) {
+          expect(config.maxPlayers).toBeLessThanOrEqual(24);
+          if (typeof config.playerTeams === "number")
+            expect(config.maxPlayers! % config.playerTeams).toBe(0);
+        }
       }
     },
   );

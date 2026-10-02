@@ -73,6 +73,28 @@ beforeEach(async () => {
   });
 });
 describe("server-authoritative submarine secrecy", () => {
+  it("sends player snapshots only on bootstrap and preserves incremental stat channels", () => {
+    const projection = new AuthoritativeView();
+    const initial = projection.project(game, a, frame());
+    expect(initial.updates[GameUpdateType.Player]).toHaveLength(
+      game.players().length,
+    );
+    const next = frame(101);
+    next.packedPlayerUpdates = new Float64Array([a.smallID(), 1, 100, 50, 100]);
+    next.packedAttackUpdates = new Float64Array();
+    const delta = projection.project(game, a, next);
+    expect(delta.updates[GameUpdateType.Player]).toEqual([]);
+    expect(delta.packedPlayerUpdates).toEqual(next.packedPlayerUpdates);
+    expect(delta.packedAttackUpdates).toEqual(next.packedAttackUpdates);
+    expect(
+      projection.project(game, a, next, true).updates[GameUpdateType.Player],
+    ).toHaveLength(game.players().length);
+    projection.reset();
+    expect(
+      projection.project(game, a, next).updates[GameUpdateType.Player],
+    ).toHaveLength(game.players().length);
+  });
+
   it("rejects numeric typed-array allocation attacks and malformed wire tags", () => {
     expect(() =>
       decodeView('{"$wire":"Uint32Array","value":4294967295}'),

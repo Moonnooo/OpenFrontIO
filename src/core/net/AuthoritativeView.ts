@@ -8,6 +8,7 @@ import {
 import { canSeeNavalUnit } from "../game/NavalCombat";
 /** A separate visibility ledger per authenticated viewer. Never share these ledgers between players. */
 export class AuthoritativeView {
+  private initialized = false;
   private contacts = new Map<
     number,
     { id: number; pos: number; expiresAt: number }
@@ -72,9 +73,14 @@ export class AuthoritativeView {
         .map((t) => [t, []]),
     ) as unknown as GameUpdateViewData["updates"];
     updates[GameUpdateType.Unit] = units;
-    updates[GameUpdateType.Player] = game
-      .players()
-      .map((p) => p.snapshotView());
+    // Full player state is needed only on join/reconnect. Normal frames retain
+    // the engine's deltas and packed stat channels, rather than copying every
+    // bot and nation snapshot for every viewer on every tick.
+    updates[GameUpdateType.Player] =
+      bootstrap || !this.initialized
+        ? game.players().map((p) => p.snapshotView())
+        : frame.updates[GameUpdateType.Player];
+    this.initialized = true;
     // Explicitly public event families only. New event types must opt in after privacy review.
     const publicTypes = [
       GameUpdateType.Win,
@@ -132,10 +138,13 @@ export class AuthoritativeView {
       tick: frame.tick,
       updates,
       packedTileUpdates: frame.packedTileUpdates,
+      packedPlayerUpdates: frame.packedPlayerUpdates,
+      packedAttackUpdates: frame.packedAttackUpdates,
       playerNameViewData: frame.playerNameViewData,
     };
   }
   reset(): void {
+    this.initialized = false;
     this.known.clear();
     this.contacts.clear();
   }
