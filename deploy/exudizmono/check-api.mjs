@@ -101,12 +101,36 @@ try {
   assert.equal(stored.status, 200);
   assert.equal((await stored.json()).players, 2);
   assert.equal((await (await post("test-secret")).json()).duplicate, true);
+  const privateLeaderboard = await (
+    await fetch(base + "/leaderboard/recorded")
+  ).json();
+  assert.equal(
+    privateLeaderboard.players.length,
+    0,
+    "Private games must not enter the public skill ladder",
+  );
+  const publicRecord = structuredClone(record);
+  publicRecord.info.gameID = "aPUBLIC123";
+  publicRecord.info.config.gameType = "Public";
+  assert.equal(
+    (
+      await fetch(base + "/game/aPUBLIC123", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": "test-secret",
+        },
+        body: JSON.stringify(publicRecord),
+      })
+    ).status,
+    200,
+  );
   const leaderboard = await (
     await fetch(base + "/leaderboard/recorded")
   ).json();
   assert.equal(leaderboard.players.length, 2);
-  assert.equal(leaderboard.players[0].wins, 1);
-  assert.equal(leaderboard.players[0].username, "Alice");
+  assert.equal(leaderboard.players.find((p) => p.username === "Alice").wins, 1);
+  assert.equal(leaderboard.players.find((p) => p.username === "Bob").losses, 1);
   const history = await (
     await fetch(base + "/public/player/" + players[0].publicId + "/games")
   ).json();

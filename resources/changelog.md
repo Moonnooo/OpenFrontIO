@@ -10,6 +10,8 @@ Exudizmono changes below come from this fork’s actual commits. Dates are UTC.
 
 2026-10-02 (UTC)
 
+- Prepare full v0.2.3 promotion and fix sidebar CI fixture. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/efc4d5fbe229229105426946f0aab800eca3160a)
+- Record branding-only live deployment. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/3ccfe011b2b53359bdd4519f185baa48e79dbce7)
 - Brand social share previews as Exudizmono. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/22eca945d39a1833c8f16199be95cfbda5b356f0)
 
 ## Exudizmono v0.2.2
