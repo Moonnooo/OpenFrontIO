@@ -1,6 +1,6 @@
 services:
  api:
-  image: frontrank-game:worker-assets
+  image: frontrank-game:discord
   command: ["node", "--import", "tsx", "api.mjs"]
   network_mode: host
   env_file:
@@ -19,7 +19,7 @@ services:
   logging:
    options: {max-size: "10m", max-file: "3"}
  game:
-  image: frontrank-game:worker-assets
+  image: frontrank-game:discord
   network_mode: host
   env_file: runtime.env
   depends_on: [api]

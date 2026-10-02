@@ -11,6 +11,7 @@ export class Footer extends LitElement {
  <a href="https://github.com/Moonnooo/OpenFrontIO" target="_blank" rel="noopener noreferrer">GitHub</a>
  <a href="/credits/">Credits &amp; licences</a>
  <a href="/source.tar.gz">Download source</a>
+ <a href="https://discord.gg/SBR45wfR2b" target="_blank" rel="noopener noreferrer">Join our Discord</a>
  </div><p class="text-xs mt-3">Exudizmono · Independent community game · ${currentGameVersion()}</p>
  <p class="text-xs mt-1">Based on OpenFront · © OpenFront and Contributors · Exudizmono modifications.</p>
  <lang-selector class="absolute right-4 top-3"></lang-selector></footer>`; }

@@ -1,0 +1,6 @@
+FROM frontrank-game:worker-assets
+COPY src/client/components/Footer.ts /app/src/client/components/Footer.ts
+COPY src/client/hud/layers/WinModal.ts /app/src/client/hud/layers/WinModal.ts
+COPY resources/public/press/index.html /app/resources/public/press/index.html
+COPY resources/fork-version.json /app/resources/fork-version.json
+RUN npm run build-prod
