@@ -15,6 +15,8 @@ async function call(path,cookie='',method='GET',data=null,origin=site) {
 }
 const cookieOf=(response,name)=>[].concat(response.headers['Set-Cookie']||[]).find(s=>s.startsWith(name+'='))?.split(';')[0];
 const guest=accounts.newPlayer();
+assert.equal(accounts.trustTier(null),'untrusted');
+assert.equal(accounts.trustTier(guest),'untrusted');
 const guestCookie=accounts.session(guest,req()).split(';')[0];
 assert.equal(accounts.current(req(guestCookie)).id,guest.id);
 assert.equal(db.prepare('SELECT token FROM sessions').get().token===guestCookie.split('=')[1],false,'session token must be hashed');
@@ -34,6 +36,7 @@ assert.equal(signed.status,303);
 let accountCookie=cookieOf(signed,'frontrank_session');
 assert.equal(accounts.current(req(accountCookie)).id,guest.id,'first registration preserves guest player');
 assert.equal(accounts.provider(guest),'email');
+assert.equal(accounts.trustTier(guest),'trusted','verified email confers trust');
 assert.deepEqual(accounts.identities(guest),{email:'alice@example.com'});
 assert.equal(accounts.current(req(guestCookie)),null,'rotated guest session is invalid');
 assert.equal((await call('/auth/email',browserCookie,'POST',{token,confirmation:bindCookie.split('=')[1]})).status,400,'link reuse denied');
@@ -72,9 +75,18 @@ async function steamResponse(valid) {
   const response=await call('/auth/callback/steam?'+query,secondCookie+'; '+cookieOf(start,'exudizmono_auth'));return {response,query,cookie:secondCookie+'; '+cookieOf(start,'exudizmono_auth')};
 }
 assert.equal((await steamResponse(false)).response.status,400,'unverified Steam assertion denied');
+assert.equal(accounts.trustTier(secondGuest),'untrusted','failed Steam verification cannot confer trust');
 const steam=await steamResponse(true);assert.equal(steam.response.status,303);
 assert.equal(accounts.current(req(cookieOf(steam.response,'frontrank_session'))).id,secondGuest.id);
 assert.equal(accounts.identities(secondGuest).steam.steamId,'76561198000000000');
+assert.equal(accounts.trustTier(secondGuest),'trusted','verified Steam alone is sufficient');
+for(const provider of ['google','discord']) {
+ const account=accounts.newPlayer();
+ db.prepare('INSERT INTO identities VALUES(?,?,?,?)').run(provider,'test-'+provider,account.id,'{}');
+ assert.equal(accounts.trustTier(account),'trusted');
+ db.prepare('DELETE FROM identities WHERE player_id=?').run(account.id);
+ assert.equal(accounts.trustTier(account),'untrusted','trust follows persisted identities');
+}
 assert.equal((await call('/auth/callback/steam?'+steam.query,steam.cookie)).status,400,'OAuth state reuse denied');
 
 const missing=createAccounts({db,origin:site,env:{},now:()=>time});assert.deepEqual(missing.available(),{discord:false,google:false,steam:true,email:false});

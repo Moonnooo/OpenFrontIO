@@ -58,3 +58,9 @@ checks continuity, expiry/replay protection, origin/state checks, hashed session
 logout-all and Steam verification; it does not send email or log into real
 provider accounts. Real Discord, Google and email end-to-end tests require
 your configured credentials and your interactive provider/inbox verification.
+
+## Trusted accounts (v0.1.9)
+
+A persisted, successfully verified Steam, Google, Discord, or email identity confers trusted status. Steam alone is sufficient; providers need not all be configured or linked. Guests and failed provider verification remain untrusted. Both lobby indicators and server admission use the users/@me trustTier response. This is Exudizmono's verified-account policy, not an anti-cheat or purchase-based reputation score.
+
+Pending deployment: update the deployed api.mjs and accounts.mjs together after owner approval, and build the client release notes/version changes. Do not copy these files to /opt/frontrank/deploy or restart live services before approval.

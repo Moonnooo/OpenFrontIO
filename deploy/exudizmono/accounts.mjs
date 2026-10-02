@@ -32,6 +32,8 @@ export function createAccounts({db, origin, secure=true, env=process.env, reques
     return db.prepare('SELECT p.* FROM sessions s JOIN players p ON p.id=s.player_id WHERE s.token IN (?,?) AND s.created_at>?').get(token,hash(token),new Date(now()-sessionLifetime).toISOString())||null;
   }
   function identities(p) { const data={}; if(p) for(const row of db.prepare('SELECT provider,profile FROM identities WHERE player_id=?').all(p.id)) data[row.provider]=JSON.parse(row.profile); return data; }
+  // Only persisted identities created after provider verification confer trust.
+  function trustTier(p) { return p && db.prepare("SELECT 1 FROM identities WHERE player_id=? AND provider IN ('steam','discord','google','email') LIMIT 1").get(p.id) ? 'trusted' : 'untrusted'; }
   function provider(p) { return p?db.prepare('SELECT provider FROM identities WHERE player_id=? LIMIT 1').get(p.id)?.provider||'guest':'guest'; }
   function newPlayer() {
     const p={id:crypto.randomUUID(),public_id:crypto.randomBytes(9).toString('base64url'),username:null,created_at:new Date(now()).toISOString()};
@@ -184,5 +186,5 @@ export function createAccounts({db, origin, secure=true, env=process.env, reques
       return false;
     } catch {errorPage(res,'Your sign-in could not be verified. Please return to the game and start again.');return true;}
   }
-  return {handle,current,identities,provider,newPlayer,session,available};
+  return {handle,current,identities,provider,trustTier,newPlayer,session,available};
 }

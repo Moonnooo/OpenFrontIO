@@ -48,7 +48,7 @@ if(req.method==='POST'&&path==='/auth/refresh'){
 }
 if(await accounts.handle(req,res,u))return;
 if(await clans.handle(req,res,u))return;
-if(req.method==='GET'&&path==='/users/@me'){const p=await user(req);if(!p)return respond(res,401,{error:'Unauthorized'});return respond(res,200,{user:accounts.identities(p),player:{publicId:p.public_id,username:null,adfree:true,unlimitedRanked:false,canCreatePublicLobbies:true,trustTier:'untrusted',achievements:{singleplayerMap:[],player:[]},friends:[],clans:clans.mine(p.id),clanRequests:clans.pending(p.id),subscription:null}});}
+if(req.method==='GET'&&path==='/users/@me'){const p=await user(req);if(!p)return respond(res,401,{error:'Unauthorized'});return respond(res,200,{user:accounts.identities(p),player:{publicId:p.public_id,username:null,adfree:true,unlimitedRanked:false,canCreatePublicLobbies:true,trustTier:accounts.trustTier(p),achievements:{singleplayerMap:[],player:[]},friends:[],clans:clans.mine(p.id),clanRequests:clans.pending(p.id),subscription:null}});}
 if(req.method==='GET'&&path==='/cluster.json')return respond(res,200,{latest:process.env.GIT_COMMIT,servers:{a:{host:process.env.DOMAIN,numWorkers:2,version:process.env.GIT_COMMIT,state:'open'}}});
 if(req.method==='POST'&&/^\/game\/[A-Za-z0-9_-]+$/.test(path)){if(!internal)return respond(res,403,{error:'Server ingestion only'});const body=await readBody(req);if(body.info?.gameID!==path.split('/').at(-1))return respond(res,400,{error:'Game ID mismatch'});return respond(res,200,ingest(body));}
 if(req.method==='GET'&&path==='/leaderboard/modes')return respond(res,200,modes(db));
