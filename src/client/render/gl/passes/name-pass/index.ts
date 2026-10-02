@@ -427,6 +427,16 @@ export class NamePass {
       }
     }
 
+    // Elimination must bypass the sliced refresh, including stale name entries.
+    // Territory is the engine's source of truth for whether a player is alive.
+    for (const slot of this.slots.values()) {
+      const player = players.get(slot.static.smallID);
+      if (slot.alive && (!player?.isAlive || player.tilesOwned <= 0)) {
+        slot.alive = false;
+        this.writePlayerDataRow(slot);
+      }
+    }
+
     // Round-robin time slicing: each call refreshes 1/UPDATE_SLICES of the
     // slots, spreading the per-player diff work across game ticks (full
     // refresh every UPDATE_SLICES ticks ≈ 400 ms — under the 500 ms troop
@@ -450,7 +460,7 @@ export class NamePass {
 
       // Per-player state straight from the caller's map — smallID is the key.
       const ps = players.get(slot.static.smallID);
-      const alive = ps?.isAlive ?? false;
+      const alive = !!ps?.isAlive && ps.tilesOwned > 0;
 
       // Skip dead players already marked dead — no work needed
       if (!alive && !slot.alive) continue;

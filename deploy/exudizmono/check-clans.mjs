@@ -130,6 +130,27 @@ try {
     isOpen: false,
     discordUrl: "https://discord.gg/SBR45wfR2b",
   });
+  for (const discordUrl of [
+    "  https://discord.gg/SBR45wfR2b  ",
+    "discord.gg/SBR45wfR2b",
+    " https://discord.com/invite/SBR45wfR2b ",
+  ]) {
+    const edited = ClanInfoSchema.parse(
+      await req("/clans/TEST", leader, "PATCH", { discordUrl }),
+    );
+    assert.equal(edited.discordUrl, "https://discord.gg/SBR45wfR2b");
+  }
+  const cleared = await req("/clans/TEST", leader, "PATCH", {
+    discordUrl: "   ",
+  });
+  assert.equal(cleared.discordUrl, null);
+  await req(
+    "/clans/TEST",
+    leader,
+    "PATCH",
+    { discordUrl: "https://example.com/invite/test" },
+    400,
+  );
   assert.equal(
     (await req("/clans/TEST/join", third, "POST")).status,
     "requested",

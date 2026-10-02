@@ -109,13 +109,17 @@ export function createClans({ db, user, respond, origin }) {
       out.is_open = data.isOpen === false ? 0 : 1;
     }
     if ("discordUrl" in data) {
-      if (data.discordUrl === null || data.discordUrl === "")
+      if (
+        data.discordUrl === null ||
+        (typeof data.discordUrl === "string" && !data.discordUrl.trim())
+      )
         out.discord_url = null;
       else {
         if (typeof data.discordUrl !== "string")
           fail(400, "Invalid Discord invite", { code: "DISCORD_INVALID" });
-        const m = data.discordUrl.match(
-          /^https:\/\/(?:discord\.gg\/|discord\.com\/invite\/)([A-Za-z0-9-]{2,100})\/?$/,
+        const invite = data.discordUrl.trim();
+        const m = invite.match(
+          /^(?:https:\/\/)?(?:discord\.gg\/|discord\.com\/invite\/)([A-Za-z0-9-]{2,100})\/?$/,
         );
         if (!m)
           fail(400, "Use a Discord invite URL", { code: "DISCORD_INVALID" });
