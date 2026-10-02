@@ -10,6 +10,7 @@ Exudizmono changes below come from this fork’s actual commits. Dates are UTC.
 
 2026-10-02 (UTC)
 
+- Include actual untagged upstream changes in release history. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/1253b00d553257c835dc39c2c27a76ba729ab2a0)
 - Show verified upstream and Exudizmono release histories. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/6a99ca66492734e3591646e4e785d699fcd39f5c)
 
 ## Exudizmono v0.1.4
