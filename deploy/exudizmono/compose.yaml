@@ -1,6 +1,6 @@
 services:
  api:
-  image: frontrank-game:discord
+  image: frontrank-game:clans
   command: ["node", "--import", "tsx", "api.mjs"]
   network_mode: host
   env_file:
@@ -14,12 +14,13 @@ services:
    - ./deploy/api.mjs:/app/api.mjs:ro
    - ./deploy/accounts.mjs:/app/accounts.mjs:ro
    - ./deploy/leaderboards.mjs:/app/leaderboards.mjs:ro
+   - ./deploy/clans.mjs:/app/clans.mjs:ro
   restart: unless-stopped
   mem_limit: 1g
   logging:
    options: {max-size: "10m", max-file: "3"}
  game:
-  image: frontrank-game:discord
+  image: frontrank-game:clans
   network_mode: host
   env_file: runtime.env
   depends_on: [api]

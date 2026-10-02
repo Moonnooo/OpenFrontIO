@@ -27,7 +27,7 @@ The approved GitHub deploy key has read/write access limited to this repository 
 
 TypeScript and production Vite builds passed. Public lobbies, browser guest-hosted lobby creation/joining, HTTPS guest schema, private lobby creation and secure WebSocket joining were verified. Isolated API tests verified schema validation, authenticated ingestion, duplicates, wins, profiles and history without fake live matches. In-memory account tests cover expiry/replay rejection, guest preservation, cross-device login, hashed sessions, origin/state checks, Google PKCE and Steam assertion verification. Real Discord, Google, email and completed Steam account sign-ins still require interactive/provider checks.
 
-A complete human multiplayer round and load testing have not been performed. Recorded wins are not Elo or a verified skill ranking. Guest cookies have no recovery. Persistent website accounts now support email links, Discord/Google OAuth and Steam OpenID. Steam browser sign-in is enabled; Discord, Google and email require provider credentials. See SIGN-IN.md. Competitive ranking, skill matchmaking and stronger result validation remain future work. Upstream commerce and native Steam/CrazyGames app-ticket login are not implemented.
+A complete human multiplayer round and load testing have not been performed. Guest cookies have no recovery. Persistent website accounts now support email links, Discord/Google OAuth and Steam OpenID. Steam browser sign-in is enabled; Discord, Google and email require provider credentials. See SIGN-IN.md. Independent per-mode skill ratings are implemented; skill matchmaking and stronger result validation remain future work. Upstream commerce and native Steam/CrazyGames app-ticket login are not implemented.
 
 ## Attribution
 
@@ -54,3 +54,11 @@ Rating tables are deterministically rebuilt chronologically from saved results a
 ### Clan directory compatibility
 
 Clan membership management is not implemented on this fork yet. `GET /clans` returns the schema-compatible empty directory with validated page/limit values. `GET /public/clans/leaderboard` returns an empty leaderboard. These endpoints do not import upstream clans or enable clan creation/joining. Isolated check: `check-clan-browse.mjs`.
+
+## Clans (Exudizmono 0.1.4)
+
+The game and leaderboard link to /clans/. Linked sign-in is required for creation and membership changes; guest browsing remains available. Steam sign-in works with the current configuration. Each account may join five clans, each clan holds 100 members. Tags contain 2-5 letters/digits and are canonical uppercase. Open clans allow instant joining; closed clans use requests approved by leaders/officers. Leaders edit settings, promote/demote officers, transfer leadership and disband. Officers manage ordinary members and requests; they cannot remove leaders or other officers. The last leader must transfer ownership or disband before leaving. Bans prevent rejoining until lifted. Disband preserves database records but removes the clan from active listings. Administrative changes are audited.
+
+clans.mjs must be mounted beside api.mjs, accounts.mjs and leaderboards.mjs. The module migrates the existing SQLite database automatically; back it up before deployment. Users/@me exposes current memberships and pending requests. Trusted match ingestion records server-validated clan tags for games starting after clan creation; no historic clan attribution is fabricated. Clan history and the 30-day clan leaderboard use those records. Clan commerce is not implemented.
+
+Isolated check-clans.mjs tests creation, permissions, joins, requests, bans, transfers, persistence, recoverable disband, origin checks, schema compatibility and recorded match history/leaderboards. Ranking integration regression checks and TypeScript/Vite production build passed. Browser guest state and sign-in gating were verified; human provider sign-in followed by clan creation still needs an interactive account.
