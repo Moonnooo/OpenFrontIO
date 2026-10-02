@@ -30,6 +30,14 @@ for r in releases:
     status='Release tag is in this fork’s upstream ancestry.' if r['included'] else 'Historical release: this tag is on a separate branch and is not an ancestor of our main base.'
     body=r['body'] or 'No release notes were published for this release.'
     upstream.append({'id':r['tag_name'],'title':r['tag_name']+(' (prerelease)' if r['prerelease'] else ''),'markdown':f"# OpenFront {r['tag_name']}\n\nPublished {r['published_at'][:10]} (UTC). {status}\n\n[Official release]({r['html_url']}) · [Release source](https://github.com/openfrontio/openfrontio/commit/{r['commit']})\n\n"+body})
+# Untagged upstream changes are real commits, not fabricated release notes.
+commits=git('log','--format=%H%x09%s',latest['commit']+'..'+base).splitlines()
+changes=[]
+for row in commits:
+    sha,title=row.split('\t',1)
+    changes.append(f'- {title}. [Change](https://github.com/openfrontio/openfrontio/commit/{sha})')
+if changes:
+    upstream.insert(0,{'id':'main-snapshot','title':'Main snapshot · '+base[:7], 'markdown':'# OpenFront main snapshot\n\nThis is the exact upstream code used by Exudizmono. These '+str(len(changes))+' commit entries are changes after '+latest['tag_name']+', not a separately published official release. [Exact base](https://github.com/openfrontio/openfrontio/commit/'+base+').\n\n'+'\n'.join(changes)})
 rows=git('log','--format=%H%x09%aI%x09%s',base+'..HEAD').splitlines()
 groups={}
 for row in rows:
@@ -44,7 +52,7 @@ for x in groups.values():
     dates=sorted(set(x['dates']));date=dates[0] if len(dates)==1 else dates[0]+' to '+dates[-1]
     exudizmono.append({'id':x['id'],'title':x['title'],'markdown':'## '+x['title']+'\n\n'+date+' (UTC)\n\n'+'\n'.join(x['changes'])})
 description=git('describe','--tags','--abbrev=8',base)
-intro=f"# Exudizmono release notes\n\nRunning Exudizmono **v{version['exudizmono']}**, based on OpenFront **{description}**. [Exact upstream source](https://github.com/openfrontio/openfrontio/commit/{base}).\n\nChoose OpenFront releases above for all {len(upstream)} published release notes through **{latest['tag_name']}**. This main snapshot also contains commits after that tag; it is not a later tagged release. Release-specific branches are labelled individually. No notes for newer versions are presented as installed.\n\nExudizmono changes below come from this fork’s actual commits. Dates are UTC.\n\n"
+intro=f"# Exudizmono release notes\n\nRunning Exudizmono **v{version['exudizmono']}**, based on OpenFront **{description}**. [Exact upstream source](https://github.com/openfrontio/openfrontio/commit/{base}).\n\nChoose OpenFront releases above for all {len(upstream) - bool(changes)} published release notes through **{latest['tag_name']}**. This main snapshot also contains commits after that tag; it is not a later tagged release. Release-specific branches are labelled individually. No notes for newer versions are presented as installed.\n\nExudizmono changes below come from this fork’s actual commits. Dates are UTC.\n\n"
 summary=intro+'\n\n'.join(x['markdown'] for x in exudizmono)
 catalog={'summary':summary,'exudizmono':exudizmono,'upstream':upstream,'upstreamCommit':base,'latestAncestorRelease':latest['tag_name']}
 (root/'resources/release-history.json').write_text(json.dumps(catalog,ensure_ascii=False,indent=2)+'\n')
