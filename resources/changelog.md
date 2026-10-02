@@ -1,10 +1,16 @@
 # Exudizmono release notes
 
-Running Exudizmono **v0.1.7**, based on OpenFront **v0.34.14-79-ge02eeba6**. [Exact upstream source](https://github.com/openfrontio/openfrontio/commit/e02eeba66b4801ebae0b686e1b0e4bc03fbf3654).
+Running Exudizmono **v0.1.8**, based on OpenFront **v0.34.14-79-ge02eeba6**. [Exact upstream source](https://github.com/openfrontio/openfrontio/commit/e02eeba66b4801ebae0b686e1b0e4bc03fbf3654).
 
 Choose OpenFront releases above for all 270 published release notes through **v0.34.14**. This main snapshot also contains commits after that tag; it is not a later tagged release. Release-specific branches are labelled individually. No notes for newer versions are presented as installed.
 
 Exudizmono changes below come from this fork’s actual commits. Dates are UTC.
+
+## Exudizmono v0.1.8
+
+2026-10-02 (UTC)
+
+- Refund half of paid building and upgrade costs after voluntary demolition. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/1ec97917bb3f64d978c79ffc15c5eca18253ee30)
 
 ## Exudizmono v0.1.7
 
