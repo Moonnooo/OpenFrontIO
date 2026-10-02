@@ -1,0 +1,13 @@
+FROM frontrank-game:demolition-refund
+COPY src /app/src
+COPY index.html /app/index.html
+COPY resources/fork-version.json /app/resources/fork-version.json
+COPY resources/changelog.md /app/resources/changelog.md
+COPY resources/release-history.json /app/resources/release-history.json
+COPY resources/lang/en.json /app/resources/lang/en.json
+COPY deploy/exudizmono /app/deploy/exudizmono
+COPY deploy/exudizmono/api.mjs /app/api.mjs
+COPY deploy/exudizmono/accounts.mjs /app/accounts.mjs
+COPY deploy/exudizmono/clans.mjs /app/clans.mjs
+COPY deploy/exudizmono/leaderboards.mjs /app/leaderboards.mjs
+RUN npm run build-prod

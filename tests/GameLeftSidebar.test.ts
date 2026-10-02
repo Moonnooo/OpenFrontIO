@@ -40,6 +40,7 @@ describe("GameLeftSidebar", () => {
   it("renders the player stats table after toggling it", async () => {
     const player = {
       id: () => "player-1",
+      clientID: () => null,
       smallID: () => 0,
       name: () => "Player 1",
       displayName: () => "Player 1",

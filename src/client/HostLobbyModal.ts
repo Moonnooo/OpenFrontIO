@@ -613,8 +613,8 @@ export class HostLobbyModal extends BaseModal {
                     this.requestUpdate();
                   }}
                 /><span
-                  >Experimental naval mode: server simulation, submarines and
-                  sonar ships. Available only on the separate test server.</span
+                  >Naval mode (experimental): submarines, sonar ships and depth
+                  charges. Private lobbies only.</span
                 ></label
               >`
             : nothing}
