@@ -10,6 +10,7 @@ Exudizmono changes below come from this fork’s actual commits. Dates are UTC.
 
 2026-10-02 (UTC)
 
+- Coalesce naval UI queries and correct independent preview feeds. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/d14529303102e55a07db90e9ff59829397b7da9c)
 - Add server-authoritative naval playtest with hidden submarines. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/d3dc60c3128cec019db75808c4e289c9a6aa8915)
 
 ## Exudizmono v0.1.9
