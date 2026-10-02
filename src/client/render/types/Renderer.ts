@@ -96,6 +96,7 @@ export interface PlayerState {
 }
 
 export interface UnitState {
+  navalVariant?: "warship" | "submarine" | "sonar";
   id: number;
   unitType: string;
   ownerID: number;
@@ -282,6 +283,7 @@ export interface TerrainRect {
 
 /** Input data for attack ring visualization. */
 export interface AttackRingInput {
+  radiusWorld?: number;
   x: number;
   y: number;
   unitId: number;

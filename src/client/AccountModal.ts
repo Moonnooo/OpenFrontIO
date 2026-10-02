@@ -4,8 +4,8 @@ import { ClientEnv } from "src/client/ClientEnv";
 import { PlayerStatsTree, UserMeResponse } from "../core/ApiSchemas";
 import { assetUrl } from "../core/AssetUrls";
 import { hasLinkedIdentity } from "./AccountIdentity";
-import { getApiBase } from "./ApiBase";
 import { fetchPlayerById, getUserMe, invalidateUserMe } from "./Api";
+import { getApiBase } from "./ApiBase";
 import {
   discordLogin,
   googleLogin,
@@ -59,7 +59,12 @@ export class AccountModal extends BaseModal {
   protected routerName = "account";
 
   @state() private email: string = "";
-  @state() private providers = { discord: false, google: false, steam: false, email: false };
+  @state() private providers = {
+    discord: false,
+    google: false,
+    steam: false,
+    email: false,
+  };
   @state() private isLoadingUser: boolean = false;
   // Set on CrazyGames when a CrazyGames user is signed in. Their identity comes
   // from the SDK, not our backend user object.
@@ -206,7 +211,10 @@ export class AccountModal extends BaseModal {
 
   // Email input + "get magic link" button used by the sign-in form.
   private renderEmailField(): TemplateResult {
-    if (!this.providers.email) return html`<p class="text-white/60 text-sm">${translateText("account_modal.email_coming_soon")}</p>`;
+    if (!this.providers.email)
+      return html`<p class="text-white/60 text-sm">
+        ${translateText("account_modal.email_coming_soon")}
+      </p>`;
     return html`
       <input
         type="email"
@@ -545,7 +553,8 @@ export class AccountModal extends BaseModal {
   // Shown when logged in without a Google identity yet. Lets the user attach
   // Google to their existing account (we never auto-merge by email).
   private renderLinkGoogleButton(): TemplateResult {
-    if (this.userMeResponse?.user?.google || !this.providers.google) return html``;
+    if (this.userMeResponse?.user?.google || !this.providers.google)
+      return html``;
     return googleLinkButton(
       this.handleLinkGoogle,
       // The shell sends the player to the website for this (see linkGoogle
@@ -791,8 +800,11 @@ export class AccountModal extends BaseModal {
                     >${translateText("main.login_steam")}</span
                   >
                 </button>`}
-
-            ${!this.providers.discord || !this.providers.google ? html`<p class="text-white/60 text-sm">${translateText("account_modal.providers_coming_soon")}</p>` : nothing}
+            ${!this.providers.discord || !this.providers.google
+              ? html`<p class="text-white/60 text-sm">
+                  ${translateText("account_modal.providers_coming_soon")}
+                </p>`
+              : nothing}
             <!-- Divider -->
             <div class="flex items-center gap-4 py-2">
               <div class="h-px bg-white/10 flex-1"></div>
@@ -913,9 +925,21 @@ export class AccountModal extends BaseModal {
       .then(async (response) => {
         if (!response.ok) return;
         const data = await response.json();
-        this.providers = { discord: data.discord === true, google: data.google === true, steam: data.steam === true, email: data.email === true };
+        this.providers = {
+          discord: data.discord === true,
+          google: data.google === true,
+          steam: data.steam === true,
+          email: data.email === true,
+        };
       })
-      .catch(() => { this.providers = { discord: false, google: false, steam: false, email: false }; });
+      .catch(() => {
+        this.providers = {
+          discord: false,
+          google: false,
+          steam: false,
+          email: false,
+        };
+      });
     this.isLoadingUser = true;
     consumeLinkResult(args);
     this.loginError = consumeLoginResult(args);

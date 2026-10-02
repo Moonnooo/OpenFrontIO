@@ -563,6 +563,14 @@ export class GameView implements GameMap {
           this._myPlayer.smallID(),
         )
       : [];
+    if (gu.navalContacts)
+      for (const contact of gu.navalContacts)
+        f.attackRings.push({
+          x: contact.pos % this._map.width(),
+          y: Math.floor(contact.pos / this._map.width()),
+          unitId: -contact.id - 1,
+          radiusWorld: 3,
+        });
     f.structuresDirty = this._structuresDirty;
 
     // First populate: signal "full upload required" by nulling changedTiles.
@@ -591,7 +599,7 @@ export class GameView implements GameMap {
     ev.bonusEvents.length = 0;
 
     for (const u of gu.updates[GameUpdateType.Unit] ?? []) {
-      if (u.isActive) continue;
+      if (u.isActive || u.concealed) continue;
       ev.deadUnits.push({
         unitType: u.unitType,
         pos: u.pos,

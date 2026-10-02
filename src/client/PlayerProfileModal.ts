@@ -30,7 +30,9 @@ export class PlayerProfileModal extends BaseModal {
 
   public open(args?: Record<string, unknown>): void {
     const publicId = typeof args?.publicID === "string" ? args.publicID : "";
-    window.location.assign(publicId ? playerProfileUrl(publicId) : "/stats/#profile-section");
+    window.location.assign(
+      publicId ? playerProfileUrl(publicId) : "/stats/#profile-section",
+    );
   }
 
   @state() private publicId: string | null = null;

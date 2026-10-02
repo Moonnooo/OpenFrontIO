@@ -52,6 +52,7 @@ import {
 } from "./InputHandler";
 import { pagePin } from "./PagePin";
 import { groupTokenOf, loggableStartMessage } from "./PresenceGroup";
+import { RemoteSimulationClient } from "./RemoteSimulationClient";
 import { versionedPathForMismatchedGame } from "./ServerList";
 import { reportGameError } from "./Telemetry";
 import { terrainMapFileLoader } from "./TerrainMapFileLoader";
@@ -701,7 +702,16 @@ async function createClientGame(
   // Kick off the font-atlas fetch so it overlaps with worker init; the
   // render passes need it parsed before createWebGLView runs.
   const atlasDataLoad = preloadAtlasData();
-  const worker = new WorkerClient(lobbyConfig.gameStartInfo, clientID);
+  if (
+    lobbyConfig.gameStartInfo.config.authoritativeNaval &&
+    lobbyConfig.gameRecord
+  )
+    throw new Error(
+      "Authoritative live games cannot be reconstructed from replay data",
+    );
+  const worker = lobbyConfig.gameStartInfo.config.authoritativeNaval
+    ? new RemoteSimulationClient(lobbyConfig.gameStartInfo, clientID, transport)
+    : new WorkerClient(lobbyConfig.gameStartInfo, clientID);
   await worker.initialize();
   await atlasDataLoad;
   const gameView = new GameView(
@@ -1047,6 +1057,10 @@ export class ClientGameRunner {
     let hasGoneToPlayer = false;
     const onmessage = (message: ServerMessage) => {
       this.lastMessageTime = Date.now();
+      if (message.type === "authoritative_view") {
+        this.turnsSeen = this.gameView.ticks();
+        return;
+      }
       if (message.type === "start") {
         console.log("starting game! in client game runner");
         this.awaitingStart = false;

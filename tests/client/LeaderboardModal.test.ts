@@ -654,27 +654,15 @@ describe("LeaderboardModal", () => {
       expect(modal.tagName.toLowerCase()).toBe("leaderboard-modal");
     });
 
-    it("should close on Escape when open", async () => {
-      const mockModalEl = { open: vi.fn(), close: vi.fn() };
-      Object.defineProperty(modal, "modalEl", {
-        get: () => mockModalEl,
-        configurable: true,
-      });
-      (modal as unknown as { onOpen: () => void }).onOpen = vi.fn();
-
-      modal.open();
-      expect((modal as unknown as { isModalOpen: boolean }).isModalOpen).toBe(
-        true,
-      );
-
-      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
-      // handleKeyDown awaits confirmBeforeClose() before closing, so the close
-      // is deferred to a later microtask — flush it before asserting.
-      await new Promise((resolve) => setTimeout(resolve, 0));
-      expect((modal as unknown as { isModalOpen: boolean }).isModalOpen).toBe(
-        false,
-      );
-      expect(mockModalEl.close).toHaveBeenCalled();
+    it("opens the fork's separate full leaderboard", () => {
+      const assign = vi.fn();
+      vi.stubGlobal("window", { location: { assign } });
+      try {
+        modal.open();
+        expect(assign).toHaveBeenCalledWith("/stats/");
+      } finally {
+        vi.unstubAllGlobals();
+      }
     });
   });
 

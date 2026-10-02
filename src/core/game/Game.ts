@@ -28,7 +28,12 @@ export type PlayerID = string;
 export type Tick = number;
 export type Gold = bigint;
 
+export type NavalVariant = "warship" | "submarine" | "sonar";
+
 export type WarshipState = {
+  navalVariant?: NavalVariant;
+  lastDepthChargeTick?: number;
+  lastTorpedoTick?: number;
   state: "patrolling" | "retreating" | "docked";
   patrolTile?: TileRef;
   retreatPort?: TileRef;
@@ -268,6 +273,7 @@ export interface UnitParamsMap {
 
   [UnitType.Warship]: {
     patrolTile: TileRef;
+    navalVariant?: NavalVariant;
   };
 
   [UnitType.Shell]: Record<string, never>;
@@ -782,6 +788,7 @@ export interface Player {
     statsOut?: number[],
     attackTroopsOut?: number[],
   ): PlayerUpdate | null;
+  snapshotView(): PlayerUpdate;
   playerProfile(): PlayerProfile;
   // WARNING: this operation is expensive.
   bestTransportShipSpawn(tile: TileRef): TileRef | false;

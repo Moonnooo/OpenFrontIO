@@ -32,6 +32,7 @@ export class ConstructionExecution implements Execution {
     private tile: TileRef,
     private rocketDirectionUp?: boolean,
     private amount?: number,
+    private navalVariant?: "warship" | "submarine" | "sonar",
   ) {}
 
   init(mg: Game, ticks: number): void {
@@ -136,7 +137,11 @@ export class ConstructionExecution implements Execution {
         break;
       case UnitType.Warship:
         this.mg.addExecution(
-          new WarshipExecution({ owner: player, patrolTile: this.tile }),
+          new WarshipExecution({
+            owner: player,
+            patrolTile: this.tile,
+            navalVariant: this.navalVariant,
+          }),
         );
         break;
       case UnitType.Port:
@@ -198,6 +203,7 @@ export class ConstructionExecution implements Execution {
       tile: this.tile,
       rocketDirectionUp: this.rocketDirectionUp,
       amount: this.amount,
+      navalVariant: this.navalVariant,
       structure: w.unitOrNull(this.structure),
       ticksUntilComplete: this.ticksUntilComplete,
     });
@@ -211,6 +217,7 @@ export class ConstructionExecution implements Execution {
     this.tile = s.tile;
     this.rocketDirectionUp = s.rocketDirectionUp;
     this.amount = s.amount;
+    this.navalVariant = s.navalVariant;
     this.structure = r.unitOrNull(s.structure);
     this.ticksUntilComplete = s.ticksUntilComplete as Tick;
   }
@@ -225,6 +232,7 @@ const ConstructionStateSchema = z.object({
   tile: zInt(),
   rocketDirectionUp: z.boolean().optional(),
   amount: zInt().optional(),
+  navalVariant: z.enum(["warship", "submarine", "sonar"]).optional(),
   structure: zRef().nullable(),
   // Unset until a structure with a build time is placed.
   ticksUntilComplete: zInt().optional(),
@@ -233,7 +241,8 @@ type ConstructionState = z.infer<typeof ConstructionStateSchema>;
 
 export const ConstructionExecutionSnapshot = execSnapshotType({
   name: "Construction",
-  version: 1,
+  version: 2,
+  migrations: { 1: (data) => data },
   schema: ConstructionStateSchema,
   cls: () => ConstructionExecution,
 });

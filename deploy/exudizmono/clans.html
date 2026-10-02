@@ -1,3 +1,255 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Exudizmono · Clans</title><style>
-:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0e1412;color:#ecf0e8;font:16px system-ui}main{max-width:1100px;margin:auto;padding:28px 20px}a{color:#c7f66a}header{display:flex;gap:24px;align-items:center;flex-wrap:wrap;border-bottom:1px solid #35422f;padding-bottom:20px}header strong{font-size:24px}header a{text-decoration:none}h1{font-size:38px;margin-bottom:8px}p{line-height:1.6;color:#aeb8ae}.panel{background:#151d19;border:1px solid #35422f;padding:22px;margin:24px 0;border-radius:8px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}label{display:block;margin-bottom:14px}input,textarea,select,button{font:inherit;padding:10px;background:#19221c;color:#ecf0e8;border:1px solid #495846;border-radius:4px}input:not([type=checkbox]),textarea{width:100%;margin-top:6px}textarea{resize:vertical}button{cursor:pointer;color:#c7f66a}button:disabled{opacity:.5;cursor:default}.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.row input{flex:1;min-width:160px}.card{padding:16px 0;border-top:1px solid #35422f}.card h3{margin:0 0 8px}small{color:#aeb8ae;font-size:14px}.danger{color:#ffadad}.status{min-height:26px;color:#c7f66a}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{font-size:14px}.badge{font-size:14px;color:#c7f66a}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:12px;border-bottom:1px solid #35422f}.scroll{overflow:auto}fieldset{border:0;margin:0;padding:0}@media(max-width:700px){.grid{grid-template-columns:1fr}header{gap:16px}h1{font-size:32px}}dialog{background:#151d19;color:#ecf0e8;border:1px solid #495846;max-width:450px;border-radius:8px}dialog::backdrop{background:#0009}
-</style></head><body><main><header><strong>EXUDIZMONO</strong><a href="/">Play game</a><a href="/stats/">Leaderboard & stats</a><a href="https://discord.gg/SBR45wfR2b" target="_blank" rel="noopener noreferrer">Discord</a></header><h1>Clans</h1><p>Create a group, find teammates and manage your members.</p><p id="identity">Loading account…</p><p id="notice"></p><p id="status" role="status" aria-live="polite" class="status"></p><div class="grid"><section class="panel"><h2>Your clans</h2><div id="mine">Loading…</div><h3>Pending join requests</h3><div id="pending"></div></section><section class="panel"><h2>Create a clan</h2><form id="create"><fieldset id="create-fields" disabled><label>Clan name<input name="name" required maxlength="35"></label><label>Tag <small>2–5 letters or digits</small><input name="tag" required minlength="2" maxlength="5" pattern="[A-Za-z0-9]{2,5}"></label><label>Description<textarea name="description" maxlength="200" rows="3"></textarea></label><label><input type="checkbox" name="isOpen" checked> Anyone can join</label><button>Create clan</button></fieldset></form><p>Up to five clans per account and 100 members per clan. Closed clans require a leader or officer to approve join requests.</p></section></div><section class="panel"><h2>Find a clan</h2><form id="search" class="row"><input id="query" aria-label="Search clan names or tags" placeholder="Search by name or tag"><button>Search</button></form><div id="browse"></div><button id="more" hidden>Load more clans</button></section><section id="details" class="panel" hidden></section><dialog id="confirmation"><h2 id="confirmation-title">Confirm action</h2><p id="confirmation-text"></p><div class="actions"><button id="confirm-yes">Confirm</button><button id="confirm-no">Cancel</button></div></dialog></main><script src="/clans/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Exudizmono · Clans</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #0e1412;
+        color: #ecf0e8;
+        font: 16px system-ui;
+      }
+      main {
+        max-width: 1100px;
+        margin: auto;
+        padding: 28px 20px;
+      }
+      a {
+        color: #c7f66a;
+      }
+      header {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+        flex-wrap: wrap;
+        border-bottom: 1px solid #35422f;
+        padding-bottom: 20px;
+      }
+      header strong {
+        font-size: 24px;
+      }
+      header a {
+        text-decoration: none;
+      }
+      h1 {
+        font-size: 38px;
+        margin-bottom: 8px;
+      }
+      p {
+        line-height: 1.6;
+        color: #aeb8ae;
+      }
+      .panel {
+        background: #151d19;
+        border: 1px solid #35422f;
+        padding: 22px;
+        margin: 24px 0;
+        border-radius: 8px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+      label {
+        display: block;
+        margin-bottom: 14px;
+      }
+      input,
+      textarea,
+      select,
+      button {
+        font: inherit;
+        padding: 10px;
+        background: #19221c;
+        color: #ecf0e8;
+        border: 1px solid #495846;
+        border-radius: 4px;
+      }
+      input:not([type="checkbox"]),
+      textarea {
+        width: 100%;
+        margin-top: 6px;
+      }
+      textarea {
+        resize: vertical;
+      }
+      button {
+        cursor: pointer;
+        color: #c7f66a;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .row input {
+        flex: 1;
+        min-width: 160px;
+      }
+      .card {
+        padding: 16px 0;
+        border-top: 1px solid #35422f;
+      }
+      .card h3 {
+        margin: 0 0 8px;
+      }
+      small {
+        color: #aeb8ae;
+        font-size: 14px;
+      }
+      .danger {
+        color: #ffadad;
+      }
+      .status {
+        min-height: 26px;
+        color: #c7f66a;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      .actions button {
+        font-size: 14px;
+      }
+      .badge {
+        font-size: 14px;
+        color: #c7f66a;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      td,
+      th {
+        text-align: left;
+        padding: 12px;
+        border-bottom: 1px solid #35422f;
+      }
+      .scroll {
+        overflow: auto;
+      }
+      fieldset {
+        border: 0;
+        margin: 0;
+        padding: 0;
+      }
+      @media (max-width: 700px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        header {
+          gap: 16px;
+        }
+        h1 {
+          font-size: 32px;
+        }
+      }
+      dialog {
+        background: #151d19;
+        color: #ecf0e8;
+        border: 1px solid #495846;
+        max-width: 450px;
+        border-radius: 8px;
+      }
+      dialog::backdrop {
+        background: #0009;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <strong>EXUDIZMONO</strong><a href="/">Play game</a
+        ><a href="/stats/">Leaderboard & stats</a
+        ><a
+          href="https://discord.gg/SBR45wfR2b"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Discord</a
+        >
+      </header>
+      <h1>Clans</h1>
+      <p>Create a group, find teammates and manage your members.</p>
+      <p id="identity">Loading account…</p>
+      <p id="notice"></p>
+      <p id="status" role="status" aria-live="polite" class="status"></p>
+      <div class="grid">
+        <section class="panel">
+          <h2>Your clans</h2>
+          <div id="mine">Loading…</div>
+          <h3>Pending join requests</h3>
+          <div id="pending"></div>
+        </section>
+        <section class="panel">
+          <h2>Create a clan</h2>
+          <form id="create">
+            <fieldset id="create-fields" disabled>
+              <label
+                >Clan name<input name="name" required maxlength="35" /></label
+              ><label
+                >Tag <small>2–5 letters or digits</small
+                ><input
+                  name="tag"
+                  required
+                  minlength="2"
+                  maxlength="5"
+                  pattern="[A-Za-z0-9]{2,5}" /></label
+              ><label
+                >Description<textarea
+                  name="description"
+                  maxlength="200"
+                  rows="3"
+                ></textarea></label
+              ><label
+                ><input type="checkbox" name="isOpen" checked /> Anyone can
+                join</label
+              ><button>Create clan</button>
+            </fieldset>
+          </form>
+          <p>
+            Up to five clans per account and 100 members per clan. Closed clans
+            require a leader or officer to approve join requests.
+          </p>
+        </section>
+      </div>
+      <section class="panel">
+        <h2>Find a clan</h2>
+        <form id="search" class="row">
+          <input
+            id="query"
+            aria-label="Search clan names or tags"
+            placeholder="Search by name or tag"
+          /><button>Search</button>
+        </form>
+        <div id="browse"></div>
+        <button id="more" hidden>Load more clans</button>
+      </section>
+      <section id="details" class="panel" hidden></section>
+      <dialog id="confirmation">
+        <h2 id="confirmation-title">Confirm action</h2>
+        <p id="confirmation-text"></p>
+        <div class="actions">
+          <button id="confirm-yes">Confirm</button
+          ><button id="confirm-no">Cancel</button>
+        </div>
+      </dialog>
+    </main>
+    <script src="/clans/app.js"></script>
+  </body>
+</html>

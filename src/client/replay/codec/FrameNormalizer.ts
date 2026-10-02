@@ -97,6 +97,7 @@ export const VIEW_DATA_ROUTING: Record<
   keyof GameUpdateViewData,
   "normalizer" | "events" | "dropped"
 > = {
+  navalContacts: "dropped",
   tick: "normalizer",
   updates: "normalizer",
   packedTileUpdates: "normalizer",

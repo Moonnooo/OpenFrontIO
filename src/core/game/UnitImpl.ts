@@ -114,6 +114,8 @@ export class UnitImpl implements Unit {
     }
     if ("patrolTile" in params) {
       this._warshipState = {
+        navalVariant:
+          "navalVariant" in params ? params.navalVariant : undefined,
         state: "patrolling",
         patrolTile: params.patrolTile,
         lastCombatTick: -100,
@@ -121,6 +123,8 @@ export class UnitImpl implements Unit {
         veterancyProgress: 0,
       };
     }
+    if (this._warshipState?.navalVariant)
+      this._health = toInt(this.maxHealth());
     this._targetUnit =
       "targetUnit" in params ? (params.targetUnit ?? undefined) : undefined;
     this._loaded =
@@ -290,7 +294,10 @@ export class UnitImpl implements Unit {
   }
 
   maxHealth(): number {
-    const base = this.info().maxHealth ?? 1;
+    const variant = this._warshipState?.navalVariant;
+    const base =
+      (this.info().maxHealth ?? 1) *
+      (variant === "submarine" ? 0.65 : variant === "sonar" ? 0.85 : 1);
     // veterancy() is 0 for non-warships, so this returns base for them.
     return maxHealthWithVeterancy(
       base,
@@ -461,10 +468,15 @@ export class UnitImpl implements Unit {
     if (
       merged.state === this._warshipState.state &&
       merged.patrolTile === this._warshipState.patrolTile &&
-      merged.retreatPort === this._warshipState.retreatPort
+      merged.retreatPort === this._warshipState.retreatPort &&
+      merged.lastDepthChargeTick === this._warshipState.lastDepthChargeTick &&
+      merged.lastTorpedoTick === this._warshipState.lastTorpedoTick
     )
       return;
     this._warshipState = {
+      navalVariant: this._warshipState.navalVariant,
+      lastDepthChargeTick: merged.lastDepthChargeTick,
+      lastTorpedoTick: merged.lastTorpedoTick,
       state: merged.state,
       patrolTile: merged.patrolTile,
       retreatPort: merged.retreatPort,
@@ -826,6 +838,9 @@ export class UnitImpl implements Unit {
         : null,
       warshipState: this._warshipState
         ? {
+            navalVariant: this._warshipState.navalVariant,
+            lastDepthChargeTick: this._warshipState.lastDepthChargeTick,
+            lastTorpedoTick: this._warshipState.lastTorpedoTick,
             state: this._warshipState.state,
             patrolTile: this._warshipState.patrolTile,
             retreatPort: this._warshipState.retreatPort,
@@ -924,8 +939,11 @@ export class UnitImpl implements Unit {
 
 export const UnitSnapshot = snapshotType({
   name: "Unit",
-  version: 2,
-  migrations: { 1: (data) => ({ ...data, goldInvestment: 0n }) },
+  version: 3,
+  migrations: {
+    1: (data) => ({ ...data, goldInvestment: 0n }),
+    2: (data) => data,
+  },
   schema: z.object({
     goldInvestment: z.bigint().nonnegative(),
     id: zInt(),
@@ -943,6 +961,9 @@ export const UnitSnapshot = snapshotType({
       .nullable(),
     warshipState: z
       .object({
+        navalVariant: z.enum(["warship", "submarine", "sonar"]).optional(),
+        lastDepthChargeTick: zInt().optional(),
+        lastTorpedoTick: zInt().optional(),
         state: z.enum(["patrolling", "retreating", "docked"]),
         patrolTile: zTile().optional(),
         retreatPort: zTile().optional(),

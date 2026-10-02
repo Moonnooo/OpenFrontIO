@@ -1,5 +1,5 @@
-import version from "resources/version.txt?raw";
 import forkVersion from "resources/fork-version.json";
+import version from "resources/version.txt?raw";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ClientEnv } from "../../src/client/ClientEnv";
 import {
@@ -154,7 +154,9 @@ describe("renderNavVersion", () => {
       "#game-version, .game-version-display",
     )) {
       expect(el.textContent).toContain(`Exudizmono v${forkVersion.exudizmono}`);
-      expect(el.textContent).toContain(`OpenFront ${forkVersion.upstreamRef} · ${forkVersion.upstreamCommit.slice(0, 7)}`);
+      expect(el.textContent).toContain(
+        `OpenFront ${forkVersion.upstreamRef} · ${forkVersion.upstreamCommit.slice(0, 7)}`,
+      );
       expect(el.textContent).not.toContain(SHA.slice(0, 7));
       // The untagged upstream placeholder must never appear in this header.
       expect(el.textContent).not.toContain("x.xx.xx");

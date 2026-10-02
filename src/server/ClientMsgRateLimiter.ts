@@ -13,6 +13,7 @@ const TOTAL_BYTES = 5 * 1024 * 1024; // 5MB per client
 export type RateLimitResult = "ok" | "limit" | "kick";
 
 interface ClientBucket {
+  queriesPerSecond: RateLimiter;
   perSecond: RateLimiter;
   perMinute: RateLimiter;
   rejoinPerMinute: RateLimiter;
@@ -28,6 +29,10 @@ export class ClientMsgRateLimiter {
 
     if (bucket.totalBytes >= TOTAL_BYTES) return "kick";
 
+    if (type === "authoritative_query") {
+      if (bytes > MAX_INTENT_SIZE) return "kick";
+      if (!bucket.queriesPerSecond.tryRemoveTokens(1)) return "limit";
+    }
     if (type === "intent") {
       // Intents are stored in turn history for the duration of the game, so
       // oversized intents would accumulate and fill up server RAM.
@@ -58,6 +63,10 @@ export class ClientMsgRateLimiter {
       return existing;
     }
     const bucket = {
+      queriesPerSecond: new RateLimiter({
+        tokensPerInterval: 30,
+        interval: "second",
+      }),
       perSecond: new RateLimiter({
         tokensPerInterval: INTENTS_PER_SECOND,
         interval: "second",

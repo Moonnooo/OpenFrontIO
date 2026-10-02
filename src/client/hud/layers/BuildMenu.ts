@@ -367,7 +367,15 @@ export class BuildMenu extends LitElement implements Controller {
   public cost(item: BuildItemDisplay): Gold {
     for (const bu of this.playerBuildables ?? []) {
       if (bu.type === item.unitType) {
-        return bu.cost;
+        return (
+          (bu.cost *
+            (item.unitType === UnitType.Warship &&
+            this.uiState?.navalVariant &&
+            this.uiState.navalVariant !== "warship"
+              ? 3n
+              : 2n)) /
+          2n
+        );
       }
     }
     return 0n;
@@ -397,7 +405,15 @@ export class BuildMenu extends LitElement implements Controller {
           ? this.uiState.rocketDirectionUp
           : undefined;
       this.eventBus.emit(
-        new BuildUnitIntentEvent(buildableUnit.type, tile, rocketDirectionUp),
+        new BuildUnitIntentEvent(
+          buildableUnit.type,
+          tile,
+          rocketDirectionUp,
+          undefined,
+          buildableUnit.type === UnitType.Warship
+            ? this.uiState.navalVariant
+            : undefined,
+        ),
       );
     }
     this.hideMenu();

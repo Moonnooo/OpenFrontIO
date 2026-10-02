@@ -1,3 +1,4 @@
+import { SONAR_RADIUS } from "../../../../core/game/NavalCombat";
 import type { AttackRingInput, UnitState } from "../../types";
 import { UT_TRANSPORT } from "../../types";
 
@@ -12,6 +13,15 @@ export function extractAttackRings(
 ): AttackRingInput[] {
   const rings: AttackRingInput[] = [];
   for (const u of units.values()) {
+    if (u.navalVariant === "sonar" && u.isActive && u.ownerID === owner) {
+      rings.push({
+        x: u.pos % mapW,
+        y: Math.floor(u.pos / mapW),
+        unitId: u.id,
+        radiusWorld: SONAR_RADIUS,
+      });
+      continue;
+    }
     if (u.unitType !== UT_TRANSPORT) continue;
     if (u.targetTile === null || !u.isActive || u.retreating) continue;
     if (u.ownerID !== owner) continue;

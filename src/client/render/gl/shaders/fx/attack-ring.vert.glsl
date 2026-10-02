@@ -2,7 +2,7 @@
 precision highp float;
 
 layout(location = 0) in vec2 aPos;
-layout(location = 1) in vec3 aInstData; // x, y, alpha
+layout(location = 1) in vec4 aInstData; // x, y, alpha
 
 uniform mat3 uCamera;
 uniform float uTilesPerPx;
@@ -17,7 +17,7 @@ void main() {
   vec2 center = vec2(aInstData.x + 0.5, aInstData.y + 0.5);
   vAlpha = aInstData.z;
 
-  float worldRadius = uRingScreenPx * uTilesPerPx;
+  float worldRadius = aInstData.w > 0.0 ? aInstData.w : uRingScreenPx * uTilesPerPx;
   vec2 worldPos = center + (aPos - 0.5) * worldRadius * 2.0;
 
   vec3 clip = uCamera * vec3(worldPos, 1.0);

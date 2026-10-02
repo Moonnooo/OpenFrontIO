@@ -91,8 +91,6 @@ const userFixture = {
   },
 } as unknown as UserMeResponse;
 
-const yellowKey = "pattern:stripes:yellow";
-const redKey = "pattern:stripes:red";
 const blueKey = "pattern:stripes:blue";
 const greenKey = "pattern:stripes:green";
 
@@ -219,18 +217,9 @@ describe("Cosmetic locker integration", () => {
     expect(cardFor(inventory, blueKey)?.state).toBe("equipped");
 
     store.open({ tab: "cosmetics" });
-    await vi.waitFor(() =>
-      expect(cardFor(store, yellowKey)?.activeVariantKey).toBe(yellowKey),
-    );
-    const storeUpdate = vi.spyOn(store, "requestUpdate");
-    cardFor(store, redKey)!
-      .querySelector<HTMLButtonElement>(`[data-variant-key="${redKey}"]`)!
-      .click();
     await store.updateComplete;
-
-    expect(cardFor(store, redKey)?.activeVariantKey).toBe(redKey);
-    expect(storeUpdate).toHaveBeenCalled();
-    storeUpdate.mockRestore();
+    expect(store.textContent).toContain("Checkout coming soon");
+    expect(store.querySelector("purchase-button")).toBeNull();
     expect(settingsChangeCount).toBe(1);
     expect(
       new UserSettings().getSelectedPatternName(catalog)?.colorPalette?.name,
@@ -253,15 +242,14 @@ describe("Cosmetic locker integration", () => {
   it("keeps accessible controls and phone layout markers across both surfaces", async () => {
     inventory.open({ tab: "skins" });
     store.open({ tab: "cosmetics" });
-    await vi.waitFor(() => expect(cardFor(store, yellowKey)).toBeDefined());
+    await store.updateComplete;
     await inventory.updateComplete;
 
     expectNoNestedInteractiveControls(inventory);
     expectNoNestedInteractiveControls(store);
 
     const inventoryCard = cardFor(inventory, blueKey)!;
-    const storeCard = cardFor(store, redKey)!;
-    for (const cosmeticCard of [inventoryCard, storeCard]) {
+    for (const cosmeticCard of [inventoryCard]) {
       const main = cosmeticCard.querySelector<HTMLButtonElement>(
         "button[data-cosmetic-main]",
       );
@@ -287,13 +275,8 @@ describe("Cosmetic locker integration", () => {
     expect(
       inventory.querySelector("[data-inventory-grid]")?.classList,
     ).toContain("grid-cols-2");
-    expect(store.querySelector("[data-store-grid]")?.classList).toContain(
-      "grid-cols-2",
-    );
-    expect(store.querySelector("[data-store-browser]")?.classList).toContain(
-      "grid-cols-1",
-    );
-    expect(store.querySelector("[data-store-browser] aside")).toBeNull();
+    expect(store.querySelector("button[disabled]")).toBeTruthy();
+    expect(store.querySelector("purchase-button")).toBeNull();
   });
 
   it("preserves the Inventory route tab and clears empty Store products", async () => {
@@ -315,20 +298,8 @@ describe("Cosmetic locker integration", () => {
     expect(window.location.hash).toBe("#modal=inventory&tab=crowns");
 
     store.open({ tab: "cosmetics" });
-    await vi.waitFor(() =>
-      expect(cardFor(store, yellowKey)?.activeVariantKey).toBe(yellowKey),
-    );
-    cardFor(store, redKey)!
-      .querySelector<HTMLButtonElement>(`[data-variant-key="${redKey}"]`)!
-      .click();
     await store.updateComplete;
-    expect(cardFor(store, redKey)?.activeVariantKey).toBe(redKey);
-    const crownsTab = [
-      ...store.querySelectorAll<HTMLButtonElement>("button"),
-    ].find((candidate) => candidate.textContent?.trim() === "Crowns")!;
-    crownsTab.click();
-    await store.updateComplete;
-
+    expect(store.textContent).toContain("Checkout coming soon");
     expect(store.querySelector("[data-store-product]")).toBeNull();
     expect(store.querySelector("purchase-button")).toBeNull();
   });

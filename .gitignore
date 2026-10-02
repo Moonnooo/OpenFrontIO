@@ -39,3 +39,6 @@ data/
 backups/
 .frontrank-patched
 signin.env
+
+# Isolated preview credentials
+deploy/exudizmono/preview.env

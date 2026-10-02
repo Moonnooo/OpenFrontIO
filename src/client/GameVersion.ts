@@ -1,5 +1,5 @@
-import version from "resources/version.txt?raw";
 import forkVersion from "resources/fork-version.json";
+import version from "resources/version.txt?raw";
 import { ClientEnv } from "./ClientEnv";
 
 // A build HAS a version only if it was tagged. resources/version.txt ships as
@@ -96,7 +96,8 @@ export function renderNavVersion(root: ParentNode = document): number {
     (el as HTMLElement).style.whiteSpace = "pre-line";
     (el as HTMLElement).style.fontSize = "11px";
     (el as HTMLElement).style.lineHeight = "1.4";
-    (el as HTMLElement).title = `Exudizmono v${forkVersion.exudizmono}; OpenFront ${forkVersion.upstreamRef} at ${forkVersion.upstreamCommit}`;
+    (el as HTMLElement).title =
+      `Exudizmono v${forkVersion.exudizmono}; OpenFront ${forkVersion.upstreamRef} at ${forkVersion.upstreamCommit}`;
     el.textContent = label;
   });
   return elements.length;

@@ -11,8 +11,8 @@ mkdir -p /opt/frontrank/public /opt/frontrank/data /opt/frontrank/backups
 cp /opt/frontrank/deploy/stats.html /opt/frontrank/public/stats.html
 cp /opt/frontrank/deploy/compose.yaml /opt/frontrank/compose.yaml
 if [ ! -f /opt/frontrank/runtime.env ]; then
- umask 077
- printf 'GAME_ENV=dev\nDOMAIN=77.68.55.16\nNUM_WORKERS=2\nINSTANCE_LETTER=a\nTURNSTILE_SITE_KEY=1x00000000000000000000AA\nSTANDALONE_API_URL=http://127.0.0.1:8787\nGIT_COMMIT=%s\nAPI_KEY=%s\n' "$(git rev-parse HEAD)" "$(openssl rand -hex 32)" > /opt/frontrank/runtime.env
+    umask 077
+    printf 'GAME_ENV=dev\nDOMAIN=77.68.55.16\nNUM_WORKERS=2\nINSTANCE_LETTER=a\nTURNSTILE_SITE_KEY=1x00000000000000000000AA\nSTANDALONE_API_URL=http://127.0.0.1:8787\nGIT_COMMIT=%s\nAPI_KEY=%s\n' "$(git rev-parse HEAD)" "$(openssl rand -hex 32)" > /opt/frontrank/runtime.env
 fi
 docker build -f Dockerfile.frontrank -t frontrank-game:test .
 tar --exclude=.git --exclude=node_modules --exclude=static --exclude=proprietary --exclude=.env --exclude='.env.*' -czf /opt/frontrank/public/source.tar.gz .

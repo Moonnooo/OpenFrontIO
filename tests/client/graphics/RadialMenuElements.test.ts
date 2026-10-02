@@ -102,6 +102,7 @@ describe("RadialMenuElements", () => {
       owner: vi.fn(() => mockPlayer),
       isLand: vi.fn(() => true),
       config: vi.fn(() => ({
+        gameConfig: () => ({}),
         theme: () => ({
           territoryColor: () => ({
             lighten: () => ({ alpha: () => ({ toRgbString: () => "#fff" }) }),

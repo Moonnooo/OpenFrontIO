@@ -26,5 +26,13 @@
     "eqeqeq": "error",
     "no-case-declarations": "error",
     "no-unused-vars": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.js", "**/*.mjs", "**/*.cjs"],
+      "rules": {
+        "typescript/prefer-nullish-coalescing": "off"
+      }
+    }
+  ]
 }

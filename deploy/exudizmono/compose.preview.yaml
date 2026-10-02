@@ -1,0 +1,39 @@
+services:
+  api:
+    image: frontrank-game:naval-preview
+    command: [node, --import, tsx, api.mjs]
+    env_file: preview.env
+    environment:
+      DATA_DIR: /data
+      API_BIND: 0.0.0.0
+    working_dir: /app
+    volumes:
+      - preview-data:/data
+      - ./api.mjs:/app/api.mjs:ro
+      - ./accounts.mjs:/app/accounts.mjs:ro
+      - ./clans.mjs:/app/clans.mjs:ro
+      - ./leaderboards.mjs:/app/leaderboards.mjs:ro
+    restart: unless-stopped
+    mem_limit: 768m
+  game:
+    image: frontrank-game:naval-preview
+    command: [node, --import, tsx, src/server/Server.ts]
+    env_file: preview.env
+    environment:
+      ENABLE_AUTHORITATIVE_NAVAL: "true"
+    depends_on: [api]
+    restart: unless-stopped
+    mem_limit: 2g
+  proxy:
+    image: frontrank-game:naval-preview
+    command: [node, deploy/exudizmono/preview-gateway.mjs]
+    volumes:
+      - /etc/letsencrypt:/certs:ro
+      - ./preview-gateway.mjs:/app/deploy/exudizmono/preview-gateway.mjs:ro
+      - ./:/preview-public:ro
+    ports: ["8443:8080"]
+    depends_on: [api, game]
+    restart: unless-stopped
+    mem_limit: 128m
+volumes:
+  preview-data:

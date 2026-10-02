@@ -9,6 +9,11 @@ import {
   UnitType,
 } from "../game/Game";
 import { TileRef } from "../game/GameMap";
+import {
+  canSeeNavalUnit,
+  isSubmarine,
+  TORPEDO_COOLDOWN,
+} from "../game/NavalCombat";
 import { WaterPathFinder } from "../pathfinding/PathFinder";
 import { PathStatus } from "../pathfinding/types";
 import { PseudoRandom } from "../PseudoRandom";
@@ -57,6 +62,17 @@ export class WarshipExecution implements Execution {
     if (isUnit(this.input)) {
       this.warship = this.input;
     } else {
+      const variant = this.input.navalVariant ?? "warship";
+      if (
+        variant !== "warship" &&
+        this.mg.config().gameConfig().authoritativeNaval !== true
+      )
+        return;
+      const cost =
+        (mg.unitInfo(UnitType.Warship).cost(mg, this.input.owner) *
+          (variant === "warship" ? 2n : 3n)) /
+        2n;
+      if (this.input.owner.gold() < cost) return;
       const spawn = this.input.owner.canBuild(
         UnitType.Warship,
         this.input.patrolTile,
@@ -143,7 +159,10 @@ export class WarshipExecution implements Execution {
 
     // Priority 3: Hunt trade ship only if not healing and no enemy warship
     if (this.warship.targetUnit()?.type() === UnitType.TradeShip) {
-      this.huntDownTradeShip();
+      if (isSubmarine(this.warship)) {
+        this.shootTarget();
+        this.patrol();
+      } else this.huntDownTradeShip();
       return;
     }
 
@@ -295,6 +314,8 @@ export class WarshipExecution implements Execution {
     for (const { unit, distSquared } of ships) {
       if (
         unit === this.warship ||
+        !canSeeNavalUnit(mg, owner, unit) ||
+        isSubmarine(unit) ||
         unit.owner() === owner ||
         !owner.canAttackPlayer(unit.owner(), true) ||
         this.alreadySentShell.has(unit) ||
@@ -652,6 +673,26 @@ export class WarshipExecution implements Execution {
   }
 
   private shootTarget() {
+    const target = this.warship.targetUnit();
+    if (!target) return;
+    if (isSubmarine(this.warship)) {
+      if (
+        this.mg.ticks() -
+          (this.warship.warshipState().lastTorpedoTick ?? -TORPEDO_COOLDOWN) <
+          TORPEDO_COOLDOWN ||
+        this.mg.getWaterComponent(this.warship.tile()) !==
+          this.mg.getWaterComponent(target.tile())
+      )
+        return;
+      this.warship.updateWarshipState({
+        lastTorpedoTick: this.mg.ticks(),
+        isInCombat: true,
+      });
+      target.modifyHealth(-300, this.warship.owner());
+      return;
+    }
+    if (isSubmarine(target)) return; // Submarines are hit by area depth charges, never surface shells.
+
     this.warship.updateWarshipState({ isInCombat: true });
     const shellAttackRate = this.mg.config().warshipShellAttackRate();
     if (this.mg.ticks() - this.lastShellAttack > shellAttackRate) {
@@ -850,6 +891,7 @@ export class WarshipExecution implements Execution {
         : {
             owner: w.player(this.input.owner),
             patrolTile: this.input.patrolTile,
+            navalVariant: this.input.navalVariant,
           },
       initialized: this.mg !== undefined,
       random: this.random === undefined ? null : w.random(this.random),
@@ -871,7 +913,11 @@ export class WarshipExecution implements Execution {
     this.input =
       "unit" in s.input
         ? r.unit(s.input.unit)
-        : { owner: r.player(s.input.owner), patrolTile: s.input.patrolTile };
+        : {
+            owner: r.player(s.input.owner),
+            patrolTile: s.input.patrolTile,
+            navalVariant: s.input.navalVariant,
+          };
     if (s.initialized) this.mg = r.game;
     if (s.random !== null) this.random = r.random(s.random);
     if (s.warship !== null) this.warship = r.unit(s.warship);
@@ -892,7 +938,11 @@ const WarshipExecutionStateSchema = z.object({
   /** An existing warship, or the params to build one in init(). */
   input: z.union([
     z.object({ unit: zRef() }),
-    z.object({ owner: zPlayerRef(), patrolTile: zTile() }),
+    z.object({
+      owner: zPlayerRef(),
+      patrolTile: zTile(),
+      navalVariant: z.enum(["warship", "submarine", "sonar"]).optional(),
+    }),
   ]),
   initialized: z.boolean(),
   random: zRandom().nullable(),
@@ -911,7 +961,8 @@ type WarshipExecutionState = z.infer<typeof WarshipExecutionStateSchema>;
 
 export const WarshipExecutionSnapshot = execSnapshotType({
   name: "Warship",
-  version: 1,
+  version: 2,
+  migrations: { 1: (data) => data },
   schema: WarshipExecutionStateSchema,
   cls: () => WarshipExecution,
 });

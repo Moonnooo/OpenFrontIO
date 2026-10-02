@@ -15,11 +15,13 @@ import {
   PlayerType,
   RankedType,
 } from "../core/game/Game";
+import { GameUpdateType } from "../core/game/GameUpdates";
 import { maps } from "../core/game/Maps.gen";
 import {
   assignTeamsLobbyPreview,
   resolveTeamsList,
 } from "../core/game/TeamAssignment";
+import { decodeView, encodeView } from "../core/net/AuthoritativeCodec";
 import {
   ClientID,
   ClientMessage,
@@ -55,6 +57,7 @@ import {
 import { createPartialGameRecord } from "../core/Util";
 import { createGameWireContext, encodeServerMessage } from "../core/ZbinWire";
 import { archive, finalizeGameRecord } from "./Archive";
+import { AuthoritativeSession } from "./AuthoritativeSession";
 import { Client } from "./Client";
 import { applyGameConfigPatch, hostCheatsEnabled } from "./ConfigPatch";
 import { LiveStatsVote, WinnerVote } from "./Consensus";
@@ -205,6 +208,9 @@ export class GameServer {
   // and a started game is still a started game once it has ended — end()
   // archives on that, and the socket close events that follow end() still
   // go through hasStarted() in handleClientDisconnect.
+  private authoritative?: AuthoritativeSession;
+  private authorityWinner?: import("../core/game/GameUpdates").WinUpdate;
+
   private stage: "lobby" | "prestart" | "started" = "lobby";
   // Set when the delayed start found an empty roster (see deferStart).
   private startDeferred = false;
@@ -790,7 +796,54 @@ export class GameServer {
         );
         break;
       }
+      case "authoritative_query": {
+        if (!this.authoritative) return;
+        try {
+          const request = decodeView(clientMsg.payload) as {
+            method?: unknown;
+            args?: unknown;
+          };
+          if (
+            typeof request.method !== "string" ||
+            !Array.isArray(request.args) ||
+            request.args.length > 4
+          )
+            return;
+          void this.authoritative
+            .query(client.clientID, request.method, request.args)
+            .then((result) => {
+              if (!this.clients.isConnected(client)) return;
+              client.ws.send(
+                encodeServerMessage(
+                  {
+                    type: "authoritative_query_result",
+                    id: clientMsg.id,
+                    payload: encodeView({ result }),
+                  },
+                  this.zbinCtx,
+                ),
+              );
+            })
+            .catch(() => {
+              if (this.clients.isConnected(client))
+                client.ws.send(
+                  encodeServerMessage(
+                    {
+                      type: "authoritative_query_result",
+                      id: clientMsg.id,
+                      payload: encodeView({ error: "Query unavailable" }),
+                    },
+                    this.zbinCtx,
+                  ),
+                );
+            });
+        } catch {
+          /* Malformed RPC cannot reach the simulation. */
+        }
+        return;
+      }
       case "hash": {
+        if (this.authoritative) return;
         client.hashes.set(clientMsg.turnNumber, clientMsg.hash);
         break;
       }
@@ -799,10 +852,12 @@ export class GameServer {
         break;
       }
       case "winner": {
+        if (this.authoritative) return;
         this.handleWinner(client, clientMsg);
         break;
       }
       case "live_stats": {
+        if (this.authoritative) return;
         this.handleLiveStats(client, clientMsg);
         break;
       }
@@ -1079,6 +1134,16 @@ export class GameServer {
     if (this.stage === "started" || this.ended) {
       return;
     }
+    if (
+      this.gameConfig.authoritativeNaval === true &&
+      (process.env.ENABLE_AUTHORITATIVE_NAVAL !== "true" ||
+        this.isPublic() ||
+        this.isListed())
+    ) {
+      this.log.error("Authoritative naval mode is unavailable or not private");
+      void this.end();
+      return;
+    }
     this.stage = "started";
     this._startTime = Date.now();
     // Set last ping to start so we don't immediately stop the game
@@ -1145,6 +1210,28 @@ export class GameServer {
     // Seed the dictionary from the same players array, in the same order,
     // every client receives in the start message.
     this.zbinCtx = createGameWireContext(this.gameStartInfo.players);
+
+    if (this.gameConfig.authoritativeNaval === true) {
+      this.authoritative = new AuthoritativeSession(
+        this.gameStartInfo,
+        (frame) => {
+          for (const c of this.clients.active()) this.sendAuthoritativeView(c);
+          const win = frame.updates[GameUpdateType.Win][0];
+          if (win && !this.authorityWinner) {
+            this.authorityWinner = win;
+            setTimeout(() => {
+              if (!this.ended) void this.end();
+            }, 1500);
+          }
+        },
+        () => {
+          this.log.error(
+            "Authoritative simulation failed; closing game without replicated fallback",
+          );
+          void this.end();
+        },
+      );
+    }
 
     this.endTurnIntervalID = setInterval(
       () => this.endTurn(),
@@ -1416,7 +1503,7 @@ export class GameServer {
         encodeServerMessage(
           {
             type: "start",
-            turns: this.turns.slice(lastTurn),
+            turns: this.authoritative ? [] : this.turns.slice(lastTurn),
             gameStartInfo: this.names.startInfoFor(
               client.clientID,
               isAdminRole(client.role),
@@ -1432,12 +1519,30 @@ export class GameServer {
           this.zbinCtx,
         ),
       );
+      if (this.authoritative) this.sendAuthoritativeView(client, true);
     } catch (error) {
       this.log.error(`error sending start message for game ${this.id}`, {
         clientID: client.clientID,
         error: error instanceof Error ? error.message : String(error),
       });
     }
+  }
+
+  private sendAuthoritativeView(client: Client, bootstrap = false): void {
+    if (!this.authoritative || client.ws.readyState !== WebSocket.OPEN) return;
+    // Slow consumers must reconnect for a fresh safe view, not accumulate an unbounded queue.
+    if (client.ws.bufferedAmount > 4 * 1024 * 1024) {
+      client.ws.close();
+      return;
+    }
+    const view = this.authoritative.view(client.clientID, bootstrap);
+    if (!view) return;
+    client.ws.send(
+      encodeServerMessage(
+        { type: "authoritative_view", payload: encodeView(view) },
+        this.zbinCtx,
+      ),
+    );
   }
 
   private endTurn() {
@@ -1463,8 +1568,12 @@ export class GameServer {
       this.turns.length,
     );
 
-    this.handleSynchronization();
     this.checkDisconnectedStatus();
+    if (this.authoritative) {
+      this.authoritative.turn(pastTurn);
+      return;
+    }
+    this.handleSynchronization();
 
     const msg = encodeServerMessage(
       {
@@ -1482,6 +1591,7 @@ export class GameServer {
 
   async end() {
     this.ended = true;
+    this.authoritative?.stop();
     // Close all WebSocket connections
     if (this.endTurnIntervalID) {
       clearInterval(this.endTurnIntervalID);
@@ -1904,7 +2014,7 @@ export class GameServer {
   }
 
   private archiveGame() {
-    const winner = this.winnerVote.winner();
+    const winner = this.authorityWinner ?? this.winnerVote.winner();
     this.log.info("archiving game", {
       gameID: this.id,
       winner: winner?.winner,

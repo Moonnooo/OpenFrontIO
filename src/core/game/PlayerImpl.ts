@@ -282,6 +282,10 @@ export class PlayerImpl implements Player {
     return diffPlayerUpdate(prev, full);
   }
 
+  snapshotView(): PlayerUpdate {
+    return this.toFullUpdate();
+  }
+
   private toFullUpdate(): PlayerUpdate {
     // Empty collections reuse shared singletons (EMPTY_*) so
     // diffPlayerUpdate's reference fast paths hit and nothing is allocated.
@@ -1400,7 +1404,13 @@ export class PlayerImpl implements Player {
       );
     }
 
-    const cost = this.mg.unitInfo(type).cost(this.mg, this);
+    const multiplier =
+      "navalVariant" in params &&
+      params.navalVariant &&
+      params.navalVariant !== "warship"
+        ? 3n
+        : 2n;
+    const cost = (this.mg.unitInfo(type).cost(this.mg, this) * multiplier) / 2n;
     const b = new UnitImpl(
       type,
       this.mg,

@@ -25,6 +25,7 @@ const COPIED_KEYS = [
   "playerTeams",
   "allowedPublicIds",
   "trusted",
+  "authoritativeNaval",
   "doomsdayClock",
   "overtime",
   "anonymizeNames",

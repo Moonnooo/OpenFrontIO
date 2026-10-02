@@ -55,7 +55,13 @@ export class DesktopNavBar extends LitElement {
       >
         <div class="flex flex-col items-center justify-center">
           <div class="h-8">
-            <a href="https://exudizmono.com/" class="text-white font-bold tracking-widest" style="font-size:clamp(17px,2vw,27px);text-decoration:none" aria-label="Exudizmono home">EXUDIZMONO</a>
+            <a
+              href="https://exudizmono.com/"
+              class="text-white font-bold tracking-widest"
+              style="font-size:clamp(17px,2vw,27px);text-decoration:none"
+              aria-label="Exudizmono home"
+              >EXUDIZMONO</a
+            >
           </div>
           <div
             id="game-version"

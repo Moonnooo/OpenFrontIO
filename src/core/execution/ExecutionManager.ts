@@ -11,6 +11,7 @@ import { BoatRetreatExecution } from "./BoatRetreatExecution";
 import { ConstructionExecution } from "./ConstructionExecution";
 import { DeleteRailroadExecution } from "./DeleteRailroadExecution";
 import { DeleteUnitExecution } from "./DeleteUnitExecution";
+import { DepthChargeExecution } from "./DepthChargeExecution";
 import { DonateGoldExecution } from "./DonateGoldExecution";
 import { DonateTroopsExecution } from "./DonateTroopExecution";
 import { EmbargoAllExecution } from "./EmbargoAllExecution";
@@ -109,6 +110,8 @@ export class Executor {
         return new EmbargoExecution(player, intent.targetID, intent.action);
       case "embargo_all":
         return new EmbargoAllExecution(player, intent.action);
+      case "depth_charge":
+        return new DepthChargeExecution(player, intent.shipId, intent.tile);
       case "build_unit":
         return new ConstructionExecution(
           player,
@@ -116,6 +119,7 @@ export class Executor {
           intent.tile,
           intent.rocketDirectionUp,
           intent.amount,
+          intent.navalVariant,
         );
       case "allianceExtension": {
         return new AllianceExtensionExecution(player, intent.recipient);

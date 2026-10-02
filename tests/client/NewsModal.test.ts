@@ -21,7 +21,11 @@ describe("NewsModal", () => {
   it("fetches the changelog on first open only", async () => {
     const fetchMock = vi.fn(async (_input: unknown) => ({
       ok: true,
-      json: async () => ({ summary: "changelog body text", exudizmono: [], upstream: [] }),
+      json: async () => ({
+        summary: "changelog body text",
+        exudizmono: [],
+        upstream: [],
+      }),
     }));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -30,7 +34,9 @@ describe("NewsModal", () => {
 
     await vi.waitFor(() => expect(modal.markdown).toContain("changelog body"));
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(String(fetchMock.mock.calls[0][0])).toContain("release-history.json");
+    expect(String(fetchMock.mock.calls[0][0])).toContain(
+      "release-history.json",
+    );
 
     // Already initialized: re-opening must not refetch.
     modal.open();
@@ -46,21 +52,44 @@ describe("NewsModal", () => {
     const modal = new NewsModal();
     modal.open();
 
-    await vi.waitFor(() => expect(modal.markdown).toContain("reopen News to retry"));
+    await vi.waitFor(() =>
+      expect(modal.markdown).toContain("reopen News to retry"),
+    );
   });
   it("switches between real histories and individual versions", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({
-      summary: "Our changes", exudizmono: [{id:"0.1.5",title:"Exudizmono v0.1.5",markdown:"Own release"}],
-      upstream: [{id:"v0.34.14",title:"v0.34.14",markdown:"Official notes"}]
-    }) })));
-    const modal = new NewsModal(); document.body.append(modal); modal.open();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({
+          summary: "Our changes",
+          exudizmono: [
+            {
+              id: "0.1.5",
+              title: "Exudizmono v0.1.5",
+              markdown: "Own release",
+            },
+          ],
+          upstream: [
+            { id: "v0.34.14", title: "v0.34.14", markdown: "Official notes" },
+          ],
+        }),
+      })),
+    );
+    const modal = new NewsModal();
+    document.body.append(modal);
+    modal.open();
     await vi.waitFor(() => expect(modal.markdown).toBe("Our changes"));
     await modal.updateComplete;
-    const source = modal.querySelector('select[aria-label="Release history"]') as HTMLSelectElement;
-    expect(source).not.toBeNull(); source.value="upstream"; source.dispatchEvent(new Event("change"));
+    const source = modal.querySelector(
+      'select[aria-label="Release history"]',
+    ) as HTMLSelectElement;
+    expect(source).not.toBeNull();
+    source.value = "upstream";
+    source.dispatchEvent(new Event("change"));
     await vi.waitFor(() => expect(modal.markdown).toBe("Official notes"));
-    source.value="exudizmono"; source.dispatchEvent(new Event("change"));
+    source.value = "exudizmono";
+    source.dispatchEvent(new Event("change"));
     await vi.waitFor(() => expect(modal.markdown).toBe("Our changes"));
   });
-
 });

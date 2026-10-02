@@ -19,3 +19,5 @@ scripts/replay/
 proprietary
 .git
 .frontrank-patched
+
+**/preview.env

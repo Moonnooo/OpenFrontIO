@@ -169,6 +169,8 @@ export class HostLobbyModal extends BaseModal {
     this.queued = lobby.queued ?? false;
   };
 
+  @state() private authoritativeNaval = false;
+
   private getRandomString(): string {
     const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
     return Array.from(
@@ -597,6 +599,25 @@ export class HostLobbyModal extends BaseModal {
             : nothing}
           <!-- Players joined a listed lobby for its advertised settings, so
                they are frozen (the server rejects changes too). -->
+          ${!this.publiclyListed
+            ? html`<label
+                class="mb-6 flex gap-3 items-start rounded-xl border border-cyan-400/30 p-4 text-white"
+                ><input
+                  type="checkbox"
+                  aria-label="Server-authoritative naval test"
+                  .checked=${this.authoritativeNaval}
+                  @change=${(e: Event) => {
+                    this.authoritativeNaval = (
+                      e.target as HTMLInputElement
+                    ).checked;
+                    this.requestUpdate();
+                  }}
+                /><span
+                  >Experimental naval mode: server simulation, submarines and
+                  sonar ships. Available only on the separate test server.</span
+                ></label
+              >`
+            : nothing}
           <game-config-settings
             class="block ${this.publiclyListed ? "opacity-60" : ""}"
             ?inert=${this.publiclyListed}
@@ -1544,6 +1565,7 @@ export class HostLobbyModal extends BaseModal {
       new CustomEvent("update-game-config", {
         detail: {
           config: {
+            authoritativeNaval: this.authoritativeNaval,
             gameMap: this.selectedMap,
             gameMapSize: this.compactMap
               ? GameMapSize.Compact

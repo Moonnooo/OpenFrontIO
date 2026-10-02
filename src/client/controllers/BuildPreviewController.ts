@@ -564,6 +564,7 @@ export class BuildPreviewController implements Controller {
           targetTile,
           rocketDirectionUp,
           isNuke ? this.uiState.upgradeMultiplier || 1 : undefined,
+          unitType === UnitType.Warship ? this.uiState.navalVariant : undefined,
         ),
       );
       if (!shouldPreserveGhostAfterBuild(unitType)) {

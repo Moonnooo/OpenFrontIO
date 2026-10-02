@@ -50,6 +50,7 @@ const makeParams = (opts?: Partial<MenuElementParams>): MenuElementParams => {
     } as any,
     game: {
       inSpawnPhase: () => false,
+      config: () => ({ gameConfig: () => ({}) }),
       owner: () => ({ isPlayer: () => false }),
     } as any,
     buildMenu: {

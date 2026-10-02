@@ -107,4 +107,13 @@ export default [
       ],
     },
   },
+  {
+    // Standalone deployment JavaScript is not part of the game's TypeScript project.
+    ...tseslint.configs.disableTypeChecked,
+    files: ["deploy/exudizmono/**/*.{js,mjs,cjs}", "accounts.mjs", "api.mjs"],
+  },
+  {
+    files: ["deploy/exudizmono/*.cjs"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
 ];

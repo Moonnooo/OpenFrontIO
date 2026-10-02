@@ -43,6 +43,7 @@ export type Intent =
   | EmojiIntent
   | DonateGoldIntent
   | DonateTroopsIntent
+  | z.infer<typeof DepthChargeIntentSchema>
   | BuildUnitIntent
   | EmbargoIntent
   | QuickChatIntent
@@ -98,6 +99,7 @@ export type Turn = z.infer<typeof TurnSchema>;
 export type GameConfig = z.infer<typeof GameConfigSchema>;
 
 export type ClientMessage =
+  | z.infer<typeof ClientAuthoritativeQuerySchema>
   | ClientSendWinnerMessage
   | ClientSendLiveStatsMessage
   | ClientPingMessage
@@ -110,6 +112,8 @@ export type ClientMessage =
   | ClientReportMessage;
 
 export type ServerMessage =
+  | z.infer<typeof ServerAuthoritativeViewSchema>
+  | z.infer<typeof ServerAuthoritativeQuerySchema>
   | ServerTurnMessage
   | ServerStartGameMessage
   | ServerPingMessage
@@ -531,6 +535,7 @@ export type PoolConfig = z.infer<typeof PoolConfigSchema>;
 
 export const GameConfigSchema = z.object({
   gameMap: z.enum(GameMapType),
+  authoritativeNaval: z.boolean().optional(),
   difficulty: z.enum(Difficulty),
   donateGold: z.boolean(), // Configures donations to humans only
   donateTroops: z.boolean(), // Configures donations to humans only
@@ -749,6 +754,13 @@ export const BuildUnitIntentSchema = z.object({
   tile: zb.uint(),
   rocketDirectionUp: z.boolean().optional(),
   amount: zb.uint({ min: 1, max: MAX_UPGRADE_AMOUNT }).optional(),
+  navalVariant: z.enum(["warship", "submarine", "sonar"]).optional(),
+});
+
+export const DepthChargeIntentSchema = z.object({
+  type: z.literal("depth_charge"),
+  shipId: zb.uint(),
+  tile: zb.uint(),
 });
 
 export const UpgradeStructureIntentSchema = z.object({
@@ -841,6 +853,7 @@ export const IntentSchema = z.discriminatedUnion("type", [
   DonateGoldIntentSchema,
   DonateTroopIntentSchema,
   BuildUnitIntentSchema,
+  DepthChargeIntentSchema,
   UpgradeStructureIntentSchema,
   EmbargoIntentSchema,
   EmbargoAllIntentSchema,
@@ -1109,6 +1122,16 @@ export const ServerRedirectMessageSchema = z.object({
   gameID: ID,
 });
 
+export const ServerAuthoritativeViewSchema = z.object({
+  type: z.literal("authoritative_view"),
+  payload: z.string(),
+});
+export const ServerAuthoritativeQuerySchema = z.object({
+  type: z.literal("authoritative_query_result"),
+  id: z.string().max(64),
+  payload: z.string(),
+});
+
 export const ServerMessageSchema = zb.discriminatedUnion("type", [
   ServerTurnMessageSchema,
   ServerPrestartMessageSchema,
@@ -1121,6 +1144,8 @@ export const ServerMessageSchema = zb.discriminatedUnion("type", [
   ServerPongMessageSchema,
   // Appended, never inserted: variant order is the wire tag (zbin/README.md).
   ServerRedirectMessageSchema,
+  ServerAuthoritativeViewSchema,
+  ServerAuthoritativeQuerySchema,
 ]);
 
 //
@@ -1262,6 +1287,12 @@ export const ClientSpectateMessageSchema = z.object({
   spectator: z.boolean(),
 });
 
+export const ClientAuthoritativeQuerySchema = z.object({
+  type: z.literal("authoritative_query"),
+  id: z.string().max(64),
+  payload: z.string().max(2000),
+});
+
 export const ClientMessageSchema = zb.discriminatedUnion("type", [
   ClientSendWinnerSchema,
   ClientSendLiveStatsSchema,
@@ -1273,6 +1304,7 @@ export const ClientMessageSchema = zb.discriminatedUnion("type", [
   ClientHashSchema,
   ClientSpectateMessageSchema,
   ClientReportMessageSchema,
+  ClientAuthoritativeQuerySchema,
 ]);
 
 //

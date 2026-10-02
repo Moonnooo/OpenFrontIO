@@ -110,7 +110,12 @@ export class ShellExecution implements Execution {
       );
     }
 
-    return Math.round((baseDamage / 250) * damageMultiplier);
+    const navalPenalty =
+      this.ownerUnit.type() === UnitType.Warship &&
+      this.ownerUnit.warshipState().navalVariant === "sonar"
+        ? 0.8
+        : 1;
+    return Math.round((baseDamage / 250) * damageMultiplier * navalPenalty);
   }
 
   public getEffectOnTargetForTesting(): number {

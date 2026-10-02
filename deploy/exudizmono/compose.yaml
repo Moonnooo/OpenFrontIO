@@ -1,33 +1,33 @@
 services:
- api:
-  image: frontrank-game:demolition-refund
-  command: ["node", "--import", "tsx", "api.mjs"]
-  network_mode: host
-  env_file:
-   - path: runtime.env
-   - path: signin.env
-     required: false
-  environment:
-   DATA_DIR: /data
-  volumes:
-   - ./data:/data
-   - ./deploy/api.mjs:/app/api.mjs:ro
-   - ./deploy/accounts.mjs:/app/accounts.mjs:ro
-   - ./deploy/leaderboards.mjs:/app/leaderboards.mjs:ro
-   - ./deploy/clans.mjs:/app/clans.mjs:ro
-  restart: unless-stopped
-  mem_limit: 1g
-  logging:
-   options: {max-size: "10m", max-file: "3"}
- game:
-  image: frontrank-game:demolition-refund
-  network_mode: host
-  env_file: runtime.env
-  depends_on: [api]
-  volumes:
-   - ./public/game-index.html:/app/static/index.html:ro
-   - ./deploy/jwt.ts:/app/src/server/jwt.ts:ro
-  restart: unless-stopped
-  mem_limit: 4g
-  logging:
-   options: {max-size: "10m", max-file: "3"}
+  api:
+    image: frontrank-game:demolition-refund
+    command: ["node", "--import", "tsx", "api.mjs"]
+    network_mode: host
+    env_file:
+      - path: runtime.env
+      - path: signin.env
+        required: false
+    environment:
+      DATA_DIR: /data
+    volumes:
+      - ./data:/data
+      - ./deploy/api.mjs:/app/api.mjs:ro
+      - ./deploy/accounts.mjs:/app/accounts.mjs:ro
+      - ./deploy/leaderboards.mjs:/app/leaderboards.mjs:ro
+      - ./deploy/clans.mjs:/app/clans.mjs:ro
+    restart: unless-stopped
+    mem_limit: 1g
+    logging:
+      options: { max-size: "10m", max-file: "3" }
+  game:
+    image: frontrank-game:demolition-refund
+    network_mode: host
+    env_file: runtime.env
+    depends_on: [api]
+    volumes:
+      - ./public/game-index.html:/app/static/index.html:ro
+      - ./deploy/jwt.ts:/app/src/server/jwt.ts:ro
+    restart: unless-stopped
+    mem_limit: 4g
+    logging:
+      options: { max-size: "10m", max-file: "3" }

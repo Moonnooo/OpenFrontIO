@@ -457,7 +457,13 @@ export class UnitPass {
     for (const unit of units.values()) {
       if (!unit.isActive || unit.waitTicks > 0) continue;
 
-      let atlasIdx = this.typeToAtlasCol.get(unit.unitType);
+      let atlasIdx = this.typeToAtlasCol.get(
+        unit.navalVariant === "submarine"
+          ? "Transport"
+          : unit.navalVariant === "sonar"
+            ? "Trade Ship"
+            : unit.unitType,
+      );
 
       // Train sub-type resolution: "Train" isn't in UNIT_ORDER.
       // Resolve to engine/carriage/loaded carriage based on trainType + loaded fields.

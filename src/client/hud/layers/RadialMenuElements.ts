@@ -13,6 +13,10 @@ import {
   UnitType,
 } from "../../../core/game/Game";
 import { TileRef } from "../../../core/game/GameMap";
+import {
+  DEPTH_CHARGE_COOLDOWN,
+  DEPTH_CHARGE_RANGE,
+} from "../../../core/game/NavalCombat";
 import { Emoji, findClosestBy, flattenedEmojiTable } from "../../../core/Util";
 import { UIState } from "../../UIState";
 import { renderNumber, translateText } from "../../Utils";
@@ -27,6 +31,7 @@ import { TooltipItem } from "./RadialMenu";
 import { EventBus } from "../../../core/EventBus";
 import {
   BuildUnitIntentEvent,
+  DepthChargeIntentEvent,
   SendUpgradeStructureIntentEvent,
 } from "../../Transport";
 const allianceIcon = assetUrl("images/AllianceIconWhite.svg");
@@ -579,6 +584,10 @@ function createMenuElements(
                   buildableUnit.type,
                   params.tile,
                   rocketDirectionUp,
+                  undefined,
+                  buildableUnit.type === UnitType.Warship
+                    ? params.uiState?.navalVariant
+                    : undefined,
                 ),
               );
             }
@@ -852,6 +861,57 @@ export const centerButtonElement: CenterButtonElement = {
   },
 };
 
+export const depthChargeElement: MenuElement = {
+  id: "depth-charge",
+  name: "Depth charges",
+  text: "Depth",
+  icon: targetIcon,
+  color: COLORS.attack,
+  tooltipItems: [
+    { text: "Drop depth charges", className: "title" },
+    {
+      text: "Bomb this water location. Maximum damage at the centre; use a sonar ship within range. You can attack a last-known contact.",
+      className: "description",
+    },
+  ],
+  disabled: (params) => !availableSonar(params),
+  action: (params) => {
+    const ship = availableSonar(params);
+    if (ship)
+      params.eventBus.emit(new DepthChargeIntentEvent(ship.id(), params.tile));
+    params.closeMenu();
+  },
+};
+function availableSonar(params: MenuElementParams) {
+  if (
+    params.game.inSpawnPhase() ||
+    !params.game.config().gameConfig().authoritativeNaval ||
+    params.game.isLand(params.tile)
+  )
+    return undefined;
+  return params.myPlayer
+    .units(UnitType.Warship)
+    .find(
+      (ship) =>
+        ship.warshipState()?.navalVariant === "sonar" &&
+        params.game.euclideanDistSquared(ship.tile(), params.tile) <=
+          DEPTH_CHARGE_RANGE ** 2 &&
+        params.game.ticks() -
+          (ship.warshipState()?.lastDepthChargeTick ??
+            -DEPTH_CHARGE_COOLDOWN) >=
+          DEPTH_CHARGE_COOLDOWN,
+    );
+}
+const navalActionElement: MenuElement = {
+  ...boatMenuElement,
+  id: "naval-actions",
+  name: "Naval actions",
+  text: "Navy",
+  disabled: () => false,
+  action: undefined,
+  subMenu: () => [boatMenuElement, depthChargeElement],
+};
+
 export const rootMenuElement: MenuElement = {
   id: "root",
   name: "root",
@@ -886,7 +946,12 @@ export const rootMenuElement: MenuElement = {
       ...(isOwnTerritory
         ? [deleteUnitElement, allyRequestElement, buildMenuElement]
         : [
-            isAllied && !isDisconnected ? allyBreakElement : boatMenuElement,
+            isAllied && !isDisconnected
+              ? allyBreakElement
+              : params.game.config().gameConfig().authoritativeNaval &&
+                  !params.game.isLand(params.tile)
+                ? navalActionElement
+                : boatMenuElement,
             inExtensionWindow ? allyExtendElement : allyRequestElement,
             showDonateInsteadOfAttack
               ? donateGoldRadialElement

@@ -6,7 +6,9 @@ const { getCosmeticsHash, getGamesPlayed } = vi.hoisted(() => ({
 }));
 vi.mock("../../src/client/Cosmetics", () => ({ getCosmeticsHash }));
 vi.mock("../../src/client/Utils", () => ({ getGamesPlayed }));
-vi.mock("../../src/core/AssetUrls", () => ({ assetUrl: () => "/_assets/release-history.rev2.json" }));
+vi.mock("../../src/core/AssetUrls", () => ({
+  assetUrl: () => "/_assets/release-history.rev2.json",
+}));
 
 import {
   NavNotificationsController,
@@ -34,7 +36,10 @@ describe("nav notifications", () => {
     localStorage.clear();
     // Seen an older version and an older cosmetics hash: news and store both
     // have something new.
-    localStorage.setItem("exudizmono.releaseNotesSeen", "/_assets/release-history.rev1.json");
+    localStorage.setItem(
+      "exudizmono.releaseNotesSeen",
+      "/_assets/release-history.rev1.json",
+    );
     localStorage.setItem("storeSeenHash", "hash-1");
   });
 
@@ -76,12 +81,17 @@ describe("nav notifications", () => {
     expect(bell.controller.showHelpDot()).toBe(true);
   });
   it("starts unread on a first visit and clears only after successful reading", () => {
-    localStorage.removeItem("exudizmono.releaseNotesSeen"); const bell=host();
+    localStorage.removeItem("exudizmono.releaseNotesSeen");
+    const bell = host();
     expect(bell.controller.showNewsDot()).toBe(true);
-    bell.controller.onNewsClick(); expect(bell.controller.showNewsDot()).toBe(true);
-    navNotifications.markNewsRead(); expect(bell.controller.showNewsDot()).toBe(false);
-    expect(localStorage.getItem("exudizmono.releaseNotesSeen")).toBe("/_assets/release-history.rev2.json");
-    navNotifications.reset(); expect(host().controller.showNewsDot()).toBe(false);
+    bell.controller.onNewsClick();
+    expect(bell.controller.showNewsDot()).toBe(true);
+    navNotifications.markNewsRead();
+    expect(bell.controller.showNewsDot()).toBe(false);
+    expect(localStorage.getItem("exudizmono.releaseNotesSeen")).toBe(
+      "/_assets/release-history.rev2.json",
+    );
+    navNotifications.reset();
+    expect(host().controller.showNewsDot()).toBe(false);
   });
-
 });

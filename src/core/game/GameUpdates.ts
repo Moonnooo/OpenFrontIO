@@ -19,6 +19,7 @@ import {
 import { TileRef } from "./GameMap";
 
 export interface GameUpdateViewData {
+  navalContacts?: { id: number; pos: TileRef; expiresAt: number }[];
   tick: number;
   updates: GameUpdates;
   /**
@@ -177,6 +178,7 @@ export interface DonateEventUpdate {
 }
 
 export interface UnitUpdate {
+  concealed?: boolean;
   type: GameUpdateType.Unit;
   unitType: UnitType;
   troops: number;

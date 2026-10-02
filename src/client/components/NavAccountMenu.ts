@@ -189,7 +189,12 @@ export class NavAccountMenu extends LitElement {
           key: "view-stats",
           labelKey: "nav_account_menu.my_stats",
           icon: iconUser,
-          onSelect: () => window.location.assign(this.userMeResponse ? playerProfileUrl(this.userMeResponse.player.publicId) : "/stats/"),
+          onSelect: () =>
+            window.location.assign(
+              this.userMeResponse
+                ? playerProfileUrl(this.userMeResponse.player.publicId)
+                : "/stats/",
+            ),
         },
         {
           key: "sign-in",

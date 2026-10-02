@@ -83,7 +83,15 @@ export class UnitDisplay extends LitElement implements Controller {
   private cost(item: UnitType): Gold {
     for (const bu of this.playerBuildables ?? []) {
       if (bu.type === item) {
-        return bu.cost;
+        return (
+          (bu.cost *
+            (item === UnitType.Warship &&
+            this.uiState?.navalVariant &&
+            this.uiState.navalVariant !== "warship"
+              ? 3n
+              : 2n)) /
+          2n
+        );
       }
     }
     return 0n;
@@ -275,6 +283,23 @@ export class UnitDisplay extends LitElement implements Controller {
                 </div>
               </div>
             `
+          : null}
+        ${unitType === UnitType.Warship &&
+        this.game.config().gameConfig().authoritativeNaval
+          ? html`<select
+              aria-label="Naval unit type"
+              class="bg-slate-800 text-white text-xs max-w-28"
+              .value=${this.uiState.navalVariant ?? "warship"}
+              @change=${(event: Event) => {
+                this.uiState.navalVariant = (event.target as HTMLSelectElement)
+                  .value as "warship" | "submarine" | "sonar";
+                this.requestUpdate();
+              }}
+            >
+              <option value="warship">Warship</option>
+              <option value="submarine">Submarine</option>
+              <option value="sonar">Sonar ship</option>
+            </select>`
           : null}
         <div
           class="${this.canBuild(unitType)

@@ -67,7 +67,8 @@
       }
 
       /* The flex unit's inline (expanded) state renders into
-         #pw-oop-flex_container, a direct <body> child. Body is a flex row,
+         #pw-oop-flex_container, a direct <body>
+ child. Body is a flex row,
          which squeezed it to width 0 — the unit could never show its
          expanded state or sense scrolling, so it latched permanently into
          the docked leaderboard. Give it its own full-width line at the top
@@ -219,22 +220,79 @@
       window.ramp.passiveMode = true;
     </script>
 
-
-
     <!-- Analytics -->
-
 
     <!-- Google tag (gtag.js) -->
 
-
-  <style>steam-wishlist,steam-widget,homepage-promos,purchase-nudge-modal,marketing-consent-toast,featured-stream,[data-page="page-inventory"],[data-page="page-clan"],a[href="/terms-of-service.html"],a[href="/privacy-policy.html"]{display:none!important}</style><script>
- const clean=()=>{document.querySelectorAll('iframe[src*="store.steampowered.com"]').forEach(el=>el.remove());document.querySelectorAll('game-mode-selector button').forEach(b=>{if(b.textContent.trim().toLowerCase()==='ranked')b.style.display='none'});document.querySelectorAll('[data-page="page-leaderboard"]').forEach(b=>{b.onclick=e=>{e.preventDefault();e.stopImmediatePropagation();location.href='/stats/'};});};
- new MutationObserver(clean).observe(document.documentElement,{childList:true,subtree:true});document.addEventListener('DOMContentLoaded',clean);
- </script></head>
+    <style>
+      steam-wishlist,
+      steam-widget,
+      homepage-promos,
+      purchase-nudge-modal,
+      marketing-consent-toast,
+      featured-stream,
+      [data-page="page-inventory"],
+      [data-page="page-clan"],
+      a[href="/terms-of-service.html"],
+      a[href="/privacy-policy.html"] {
+        display: none !important;
+      }
+    </style>
+    <script>
+      const clean = () => {
+        document
+          .querySelectorAll('iframe[src*="store.steampowered.com"]')
+          .forEach((el) => el.remove());
+        document.querySelectorAll("game-mode-selector button").forEach((b) => {
+          if (b.textContent.trim().toLowerCase() === "ranked")
+            b.style.display = "none";
+        });
+        document
+          .querySelectorAll('[data-page="page-leaderboard"]')
+          .forEach((b) => {
+            b.onclick = (e) => {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              location.href = "/stats/";
+            };
+          });
+      };
+      new MutationObserver(clean).observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+      });
+      document.addEventListener("DOMContentLoaded", clean);
+    </script>
+  </head>
 
   <body
     class="select-none font-sans min-h-screen bg-neutral-800 transition-opacity duration-300 ease-in-out flex flex-row flex-wrap content-start"
   >
+    <div
+      id="naval-preview-banner"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 99999;
+        pointer-events: none;
+        text-align: center;
+        background: #15465b;
+        color: white;
+        font: 12px system-ui;
+        padding: 4px;
+      "
+    >
+      EXPERIMENTAL TEST SERVER — separate games and data; production is
+      unchanged
+    </div>
+    <script>
+      if (location.port === "8443")
+        document.getElementById("naval-preview-banner").style.display = "block";
+    </script>
+
     <div id="hex-grid" class="fixed inset-0 -z-50 pointer-events-none">
       <div
         id="background-layer"
@@ -569,8 +627,6 @@
     <!-- Analytics -->
 
     <script type="module" src="/src/client/Main.ts"></script>
-    <footer>
-
-    </footer>
+    <footer></footer>
   </body>
 </html>

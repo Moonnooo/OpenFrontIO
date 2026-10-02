@@ -1,3 +1,6 @@
+vi.mock("../../src/client/ApiBase", () => ({
+  getApiBase: () => "https://game.exudizmono.com/backend",
+}));
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { UserMeResponse } from "../../src/core/ApiSchemas";
 
@@ -90,12 +93,31 @@ describe("AccountModal — rendering", () => {
     modal = document.createElement("account-modal") as AccountModal;
     modal.setAttribute("inline", "");
     document.body.appendChild(modal);
+    (modal as unknown as { providers: unknown }).providers = {
+      discord: true,
+      google: true,
+      steam: true,
+      email: true,
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({
+          discord: true,
+          google: true,
+          steam: true,
+          email: true,
+        }),
+      })),
+    );
     await modal.updateComplete;
   });
 
   afterEach(() => {
     document.body.removeChild(modal);
     vi.clearAllMocks();
+    vi.unstubAllGlobals();
     delete (window as { openfrontDesktop?: unknown }).openfrontDesktop;
   });
 

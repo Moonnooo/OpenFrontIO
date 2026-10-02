@@ -16,6 +16,7 @@ import {
   UnitType,
 } from "../core/game/Game";
 import { TileRef } from "../core/game/GameMap";
+import { decodeView, encodeView } from "../core/net/AuthoritativeCodec";
 import {
   AllPlayersStats,
   ClientHashMessage,
@@ -103,12 +104,20 @@ export class SendBoatAttackIntentEvent implements GameEvent {
   ) {}
 }
 
+export class DepthChargeIntentEvent implements GameEvent {
+  constructor(
+    public readonly shipId: number,
+    public readonly tile: TileRef,
+  ) {}
+}
+
 export class BuildUnitIntentEvent implements GameEvent {
   constructor(
     public readonly unit: UnitType,
     public readonly tile: TileRef,
     public readonly rocketDirectionUp?: boolean,
     public readonly amount?: number,
+    public readonly navalVariant?: "warship" | "submarine" | "sonar",
   ) {}
 }
 
@@ -259,6 +268,42 @@ export class Transport {
   private buffer: ClientMessage[] = [];
 
   private onconnect: () => void;
+  private authoritativeReceiver?: (payload: string) => void;
+  private authoritativeFrames: string[] = [];
+  private authoritativeQueries = new Map<
+    string,
+    {
+      resolve: (result: any) => void;
+      reject: (error: Error) => void;
+      timer: ReturnType<typeof setTimeout>;
+    }
+  >();
+
+  setAuthoritativeReceiver(
+    receiver: ((payload: string) => void) | undefined,
+  ): void {
+    this.authoritativeReceiver = receiver;
+    if (receiver) {
+      for (const frame of this.authoritativeFrames) receiver(frame);
+      this.authoritativeFrames = [];
+    }
+  }
+  authoritativeQuery<T>(method: string, args: unknown[]): Promise<T> {
+    const id = crypto.randomUUID();
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.authoritativeQueries.delete(id);
+        reject(new Error("Server query timed out"));
+      }, 5000);
+      this.authoritativeQueries.set(id, { resolve, reject, timer });
+      this.sendMsg({
+        type: "authoritative_query",
+        id,
+        payload: encodeView({ method, args }),
+      });
+    });
+  }
+
   private onmessage: (msg: ServerMessage) => void;
 
   private pingInterval: number | null = null;
@@ -329,6 +374,9 @@ export class Transport {
     this.subscribe(SendEmbargoIntentEvent, (e) => this.onSendEmbargoIntent(e));
     this.subscribe(SendEmbargoAllIntentEvent, (e) =>
       this.onSendEmbargoAllIntent(e),
+    );
+    this.subscribe(DepthChargeIntentEvent, (e) =>
+      this.sendIntent({ type: "depth_charge", shipId: e.shipId, tile: e.tile }),
     );
     this.subscribe(BuildUnitIntentEvent, (e) => this.onBuildUnitIntent(e));
 
@@ -520,6 +568,28 @@ export class Transport {
           if (from !== null) {
             sessionStorage.removeItem(poolRedirectLatch(from));
             sessionStorage.removeItem(POOL_REDIRECT_FROM);
+          }
+        }
+        if (msg.type === "authoritative_query_result") {
+          const query = this.authoritativeQueries.get(msg.id);
+          if (query) {
+            this.authoritativeQueries.delete(msg.id);
+            clearTimeout(query.timer);
+            const reply = decodeView(msg.payload) as {
+              result?: unknown;
+              error?: string;
+            };
+            if (reply.error) query.reject(new Error(reply.error));
+            else query.resolve(reply.result);
+          }
+        }
+        if (msg.type === "authoritative_view") {
+          if (this.authoritativeReceiver)
+            this.authoritativeReceiver(msg.payload);
+          else {
+            if (this.authoritativeFrames.length >= 200)
+              throw new Error("Authoritative backlog exceeded");
+            this.authoritativeFrames.push(msg.payload);
           }
         }
         this.isSessionReady = true;
@@ -893,6 +963,7 @@ export class Transport {
   private onBuildUnitIntent(event: BuildUnitIntentEvent) {
     this.sendIntent({
       type: "build_unit",
+      navalVariant: event.navalVariant,
       unit: event.unit,
       tile: event.tile,
       rocketDirectionUp: event.rocketDirectionUp,

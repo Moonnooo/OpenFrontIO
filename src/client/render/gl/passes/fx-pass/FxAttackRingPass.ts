@@ -20,6 +20,7 @@ export type { AttackRingInput } from "../../../types";
 // ---------------------------------------------------------------------------
 
 interface ActiveAttackRing {
+  radiusWorld?: number;
   unitId: number;
   x: number;
   y: number;
@@ -32,7 +33,7 @@ interface ActiveAttackRing {
 // Instance data layout: x, y, alpha
 // ---------------------------------------------------------------------------
 
-const ATTACK_RING_FLOATS = 3;
+const ATTACK_RING_FLOATS = 4;
 
 const FADE_IN_MS = 200;
 const FADE_OUT_MS = 300;
@@ -91,7 +92,7 @@ export class FxAttackRingPass {
 
     gl.bindBuffer(gl.ARRAY_BUFFER, glBuf);
     gl.enableVertexAttribArray(1);
-    gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 0, 0);
     gl.vertexAttribDivisor(1, 1);
 
     gl.bindVertexArray(null);
@@ -118,6 +119,7 @@ export class FxAttackRingPass {
     for (const r of rings) {
       const existing = this.active.find((a) => a.unitId === r.unitId);
       if (existing) {
+        existing.radiusWorld = r.radiusWorld;
         existing.x = r.x;
         existing.y = r.y;
         if (existing.fadingOut) {
@@ -126,6 +128,7 @@ export class FxAttackRingPass {
         }
       } else {
         this.active.push({
+          radiusWorld: r.radiusWorld,
           unitId: r.unitId,
           x: r.x,
           y: r.y,
@@ -167,6 +170,7 @@ export class FxAttackRingPass {
       data[off + 0] = ar.x;
       data[off + 1] = ar.y;
       data[off + 2] = alpha;
+      data[off + 3] = (ar.radiusWorld ?? 0) / 0.8;
     }
 
     this.ringCount = count;
