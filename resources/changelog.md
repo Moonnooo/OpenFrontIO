@@ -1,15 +1,22 @@
 # Exudizmono release notes
 
-Running Exudizmono **v0.2.4**, based on OpenFront **v0.34.14-79-ge02eeba6**. [Exact upstream source](https://github.com/openfrontio/openfrontio/commit/e02eeba66b4801ebae0b686e1b0e4bc03fbf3654).
+Running Exudizmono **v0.2.5**, based on OpenFront **v0.34.14-79-ge02eeba6**. [Exact upstream source](https://github.com/openfrontio/openfrontio/commit/e02eeba66b4801ebae0b686e1b0e4bc03fbf3654).
 
 Choose OpenFront releases above for all 270 published release notes through **v0.34.14**. This main snapshot also contains commits after that tag; it is not a later tagged release. Release-specific branches are labelled individually. No notes for newer versions are presented as installed.
 
 Exudizmono changes below come from this fork’s actual commits. Dates are UTC.
 
+## Exudizmono v0.2.5
+
+2026-10-02 (UTC)
+
+- Enable protected naval units in public multiplayer and ranked lobbies. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/07cfdafe6f96e0b7dfcced8916f6b2ad600f6296)
+
 ## Exudizmono v0.2.4
 
 2026-10-02 (UTC)
 
+- Promote approved v0.2.4 release. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/96f771c4dd006bae6f27751a56c87c65b2c9aba8)
 - Accept archived players without optional stats so skill results are recorded. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/473a35353b572afd58c6272a506aa0f1b3ec4e9d)
 - Hide eliminated player names immediately and normalize clan invite edits. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/308164c36e055ac0eaab7075420201749302bb65)
 
