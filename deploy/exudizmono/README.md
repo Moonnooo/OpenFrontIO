@@ -50,3 +50,7 @@ Stats UI is the restored FrontRank design at `/stats/`, also published on the or
 Competitive ratings exclude solo/private/cancelled/cheat-enabled games, humans-vs-nations, records with missing human identities and fewer than two humans, nation victories and malformed ranked roster sizes. Variant filters affect results and visible players; the displayed rating remains the whole-mode rating. Missing placement data permits winner-versus-loser comparisons only. This estimates skill from available outcomes, not a guarantee of player strength. New variant combinations appear from actual game configurations.
 
 Rating tables are deterministically rebuilt chronologically from saved results at startup and ingestion; duplicates cannot award points again. This prioritizes correctness for this initial deployment; large match histories will need incremental chronological updates. All ladder search, sorting, tier filters and pagination preserve global ranks. Live fixtures are never seeded. Isolated verification: `check-rankings.mjs`, `check-ranking-math.mjs`.
+
+### Clan directory compatibility
+
+Clan membership management is not implemented on this fork yet. `GET /clans` returns the schema-compatible empty directory with validated page/limit values. `GET /public/clans/leaderboard` returns an empty leaderboard. These endpoints do not import upstream clans or enable clan creation/joining. Isolated check: `check-clan-browse.mjs`.

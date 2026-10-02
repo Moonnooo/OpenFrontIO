@@ -52,6 +52,16 @@ if(req.method==='GET'&&path==='/leaderboard/modes')return respond(res,200,modes(
 if(req.method==='GET'&&path==='/leaderboard/recorded')return respond(res,200,ladder(db,{mode:u.searchParams.get('mode')||'all',variant:u.searchParams.get('variant')||'all',cursor:Number(u.searchParams.get('cursor')||0),query:(u.searchParams.get('q')||'').slice(0,120),player:u.searchParams.get('player'),tier:u.searchParams.get('tier')||'all',sort:u.searchParams.get('sort')||'elo'}));
 if(req.method==='GET'&&path==='/leaderboard/ranked')return respond(res,200,{'1v1':[],'2v2':[]});
 const match=path.match(/^\/public\/player\/([A-Za-z0-9_-]{1,80})(\/games)?$/);if(req.method==='GET'&&match){const p=db.prepare('SELECT * FROM players WHERE public_id=?').get(match[1]);if(!p)return respond(res,404,{error:'Player not found'});if(!match[2])return respond(res,200,profile(p));const offset=Number(u.searchParams.get('cursor')||0);if(!Number.isSafeInteger(offset)||offset<0)return respond(res,400,{error:'Invalid cursor'});const rows=db.prepare(`SELECT g.*,r.result,r.username FROM games g JOIN results r ON r.game_id=g.id WHERE r.player_id=? ORDER BY g.start DESC,g.id LIMIT 51 OFFSET ?`).all(p.id,offset);const results=rows.slice(0,50).map(g=>({gameId:g.id,start:g.start,durationSeconds:Math.floor(g.duration),map:g.map,mode:g.mode,type:g.type,playerTeams:g.config?JSON.parse(g.config).playerTeams??null:null,modeKey:g.mode_key,variant:g.variant,rankedType:g.ranked_type,result:g.result,totalPlayers:null,username:g.username,clanTag:null}));return respond(res,200,{results,nextCursor:rows.length>50?String(offset+50):null});}
+// Clan membership management is not enabled on this independent server yet.
+// An empty directory is the truthful, schema-compatible browse response.
+if(req.method==='GET'&&path==='/clans'){
+ const page=Number(u.searchParams.get('page')||1),limit=Number(u.searchParams.get('limit')||20);
+ if(!Number.isSafeInteger(page)||page<1||page>1000000||!Number.isSafeInteger(limit)||limit<1||limit>100)return respond(res,400,{error:'Invalid pagination'});
+ return respond(res,200,{results:[],total:0,page,limit});
+}
+if(req.method==='GET'&&path==='/public/clans/leaderboard'){
+ const end=new Date();return respond(res,200,{start:new Date(end.getTime()-30*86400000).toISOString(),end:end.toISOString(),clans:[],total:0,limit:100});
+}
 if(req.method==='GET'&&path==='/news.json')return respond(res,200,[]);
 if(req.method==='GET'&&path==='/cosmetics.json')return respond(res,200,{patterns:{},flags:{}});
 if(req.method==='GET'&&path==='/streams.json')return respond(res,200,{});
