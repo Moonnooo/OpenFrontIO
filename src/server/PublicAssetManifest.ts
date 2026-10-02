@@ -9,6 +9,7 @@ import {
 
 const HASHED_PUBLIC_ASSET_GLOBS = [
   "changelog.md",
+  "release-history.json",
   "manifest.json",
   "atlases/**/*",
   "cosmetics/**/*",

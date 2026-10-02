@@ -4,4 +4,5 @@ COPY resources/fork-version.json /app/resources/fork-version.json
 COPY resources/news.json /app/resources/news.json
 COPY resources/changelog.md /app/resources/changelog.md
 COPY resources/release-history.json /app/resources/release-history.json
+COPY src/server/PublicAssetManifest.ts /app/src/server/PublicAssetManifest.ts
 RUN npm run build-prod
