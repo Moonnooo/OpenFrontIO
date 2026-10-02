@@ -1,6 +1,6 @@
 services:
   api:
-    image: frontrank-game:exudizmono-0.2.3
+    image: frontrank-game:exudizmono-0.2.4
     command: ["node", "--import", "tsx", "api.mjs"]
     network_mode: host
     env_file:
@@ -20,7 +20,7 @@ services:
     logging:
       options: { max-size: "10m", max-file: "3" }
   game:
-    image: frontrank-game:exudizmono-0.2.3
+    image: frontrank-game:exudizmono-0.2.4
     network_mode: host
     env_file: runtime.env
     environment:
