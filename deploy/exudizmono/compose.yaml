@@ -1,6 +1,6 @@
 services:
   api:
-    image: frontrank-game:exudizmono-0.2.4
+    image: frontrank-game:exudizmono-0.2.5
     command: ["node", "--import", "tsx", "api.mjs"]
     network_mode: host
     env_file:
@@ -20,11 +20,12 @@ services:
     logging:
       options: { max-size: "10m", max-file: "3" }
   game:
-    image: frontrank-game:exudizmono-0.2.4
+    image: frontrank-game:exudizmono-0.2.5
     network_mode: host
     env_file: runtime.env
     environment:
       ENABLE_AUTHORITATIVE_NAVAL: "true"
+      ENABLE_PUBLIC_AUTHORITATIVE_NAVAL: "true"
     depends_on: [api]
     volumes:
       - ./public/game-index.html:/app/static/index.html:ro

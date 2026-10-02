@@ -21,6 +21,7 @@ services:
     env_file: preview.env
     environment:
       ENABLE_AUTHORITATIVE_NAVAL: "true"
+      ENABLE_PUBLIC_AUTHORITATIVE_NAVAL: "true"
     depends_on: [api]
     restart: unless-stopped
     mem_limit: 2g

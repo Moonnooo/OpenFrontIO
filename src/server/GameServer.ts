@@ -1143,10 +1143,10 @@ export class GameServer {
     if (
       this.gameConfig.authoritativeNaval === true &&
       (process.env.ENABLE_AUTHORITATIVE_NAVAL !== "true" ||
-        this.isPublic() ||
-        this.isListed())
+        ((this.isPublic() || this.isListed()) &&
+          process.env.ENABLE_PUBLIC_AUTHORITATIVE_NAVAL !== "true"))
     ) {
-      this.log.error("Authoritative naval mode is unavailable or not private");
+      this.log.error("Authoritative naval mode is unavailable for this lobby");
       void this.end();
       return;
     }
