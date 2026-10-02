@@ -20,7 +20,7 @@ services:
     logging:
       options: { max-size: "10m", max-file: "3" }
   game:
-    image: frontrank-game:demolition-refund
+    image: frontrank-game:share-branding
     network_mode: host
     env_file: runtime.env
     depends_on: [api]
