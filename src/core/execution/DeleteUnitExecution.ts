@@ -1,5 +1,12 @@
 import { z } from "zod";
-import { Execution, Game, MessageType, Player, Unit } from "../game/Game";
+import {
+  Execution,
+  Game,
+  MessageType,
+  Player,
+  Structures,
+  Unit,
+} from "../game/Game";
 import { execSnapshotType } from "../snapshot/ExecutionSnapshot";
 import type {
   ExecRecord,
@@ -79,12 +86,20 @@ export class DeleteUnitExecution implements Execution {
     if (!this.active || !this.unit) {
       return;
     }
-    if (!this.unit.isActive()) {
+    if (
+      !this.unit.isActive() ||
+      this.unit.owner() !== this.player ||
+      !this.unit.isMarkedForDeletion()
+    ) {
       this.active = false;
       return;
     }
     if (this.unit.isOverdueDeletion()) {
+      const refund = Structures.has(this.unit.type())
+        ? this.unit.demolitionRefund()
+        : 0n;
       this.unit.delete(false);
+      this.player.addGold(refund);
 
       this.mg.displayMessage(
         `events_display.unit_voluntarily_deleted`,

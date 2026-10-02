@@ -17,6 +17,7 @@ import {
 import { simpleHash, toInt, withinInt } from "../Util";
 import {
   AllUnitParams,
+  Gold,
   MessageType,
   NukeState,
   Player,
@@ -39,6 +40,15 @@ import { maxHealthWithVeterancy } from "./Veterancy";
 
 export class UnitImpl implements Unit {
   private _active = true;
+  private _goldInvestment: Gold = 0n;
+
+  recordGoldInvestment(amount: Gold): void {
+    if (amount > 0n) this._goldInvestment += amount;
+  }
+
+  demolitionRefund(): Gold {
+    return (this._goldInvestment + 1n) / 2n;
+  }
   private _targetTile: TileRef | undefined;
   private _targetPlayer: Player | TerraNullius | undefined;
   private _targetUnit: Unit | undefined;
@@ -246,6 +256,7 @@ export class UnitImpl implements Unit {
 
   setOwner(newOwner: PlayerImpl): void {
     this.clearPendingDeletion();
+    if (newOwner !== this._owner) this._goldInvestment = 0n;
     switch (this._type) {
       case UnitType.Warship:
       case UnitType.Port:
@@ -792,6 +803,7 @@ export class UnitImpl implements Unit {
   snapshot(w: SnapshotWriter): UnitState {
     const nuke = this._nukeState;
     return {
+      goldInvestment: this._goldInvestment,
       id: this._id,
       type: this._type,
       owner: w.player(this._owner),
@@ -862,6 +874,7 @@ export class UnitImpl implements Unit {
   /** Fills a prototype-only shell; see RestorableExecution.restoreSnapshot. */
   restoreSnapshot(s: UnitState, r: SnapshotReader): void {
     this.mg = r.game;
+    this._goldInvestment = s.goldInvestment;
     this._id = s.id;
     this._type = s.type;
     this._owner = r.player(s.owner) as PlayerImpl;
@@ -911,8 +924,10 @@ export class UnitImpl implements Unit {
 
 export const UnitSnapshot = snapshotType({
   name: "Unit",
-  version: 1,
+  version: 2,
+  migrations: { 1: (data) => ({ ...data, goldInvestment: 0n }) },
   schema: z.object({
+    goldInvestment: z.bigint().nonnegative(),
     id: zInt(),
     type: UnitTypeSchema,
     owner: zPlayerRef(),

@@ -568,6 +568,8 @@ export interface Unit {
   // Upgradable Structures
   level(): number;
   increaseLevel(): void;
+  recordGoldInvestment(amount: Gold): void;
+  demolitionRefund(): Gold;
   decreaseLevel(destroyer?: Player): void;
 }
 

@@ -1412,7 +1412,7 @@ export class PlayerImpl implements Player {
     this._units.push(b);
     this._myUnitsVersion++;
     this.recordUnitConstructed(type);
-    this.removeGold(cost);
+    b.recordGoldInvestment(this.removeGold(cost));
     this.removeTroops("troops" in params ? (params.troops ?? 0) : 0);
     this.mg.addUpdate(b.toUpdate());
     this.mg.addUnit(b);
@@ -1495,7 +1495,7 @@ export class PlayerImpl implements Player {
 
   upgradeUnit(unit: Unit) {
     const cost = this.mg.unitInfo(unit.type()).cost(this.mg, this);
-    this.removeGold(cost);
+    unit.recordGoldInvestment(this.removeGold(cost));
     unit.increaseLevel();
     this.recordUnitConstructed(unit.type());
   }
