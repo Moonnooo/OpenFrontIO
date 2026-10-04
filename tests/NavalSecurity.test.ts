@@ -95,6 +95,34 @@ describe("server-authoritative submarine secrecy", () => {
     ).toHaveLength(game.players().length);
   });
 
+  it("introduces late players with complete snapshots before forwarding deltas", () => {
+    const projection = new AuthoritativeView();
+    projection.project(game, a, frame());
+    const late = game.addPlayer(
+      new PlayerInfo("late", PlayerType.Bot, null, "late"),
+    );
+    const next = frame(101);
+    next.updates[GameUpdateType.Player] = [
+      { type: GameUpdateType.Player, id: late.id(), isAlive: true },
+    ];
+    const projected = projection.project(game, a, next);
+    const introduced = projected.updates[GameUpdateType.Player].find(
+      (p) => p.id === late.id(),
+    );
+    expect(introduced?.allies).toEqual([]);
+    expect(introduced?.targets).toEqual([]);
+    expect(introduced?.outgoingAllianceRequests).toEqual([]);
+    expect(introduced?.smallID).toBe(late.smallID());
+    expect(next.updates[GameUpdateType.Player][0].allies).toBeUndefined();
+    const later = frame(102);
+    later.updates[GameUpdateType.Player] = [
+      { type: GameUpdateType.Player, id: late.id(), isAlive: false },
+    ];
+    expect(
+      projection.project(game, a, later).updates[GameUpdateType.Player],
+    ).toEqual(later.updates[GameUpdateType.Player]);
+  });
+
   it("rejects numeric typed-array allocation attacks and malformed wire tags", () => {
     expect(() =>
       decodeView('{"$wire":"Uint32Array","value":4294967295}'),

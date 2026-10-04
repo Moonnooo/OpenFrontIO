@@ -9,6 +9,7 @@ import { canSeeNavalUnit } from "../game/NavalCombat";
 /** A separate visibility ledger per authenticated viewer. Never share these ledgers between players. */
 export class AuthoritativeView {
   private initialized = false;
+  private knownPlayers = new Set<string>();
   private contacts = new Map<
     number,
     { id: number; pos: number; expiresAt: number }
@@ -78,8 +79,20 @@ export class AuthoritativeView {
     // bot and nation snapshot for every viewer on every tick.
     updates[GameUpdateType.Player] =
       bootstrap || !this.initialized
-        ? game.players().map((p) => p.snapshotView())
-        : frame.updates[GameUpdateType.Player];
+        ? game.allPlayers().map((p) => p.snapshotView())
+        : [...frame.updates[GameUpdateType.Player]];
+    const playerUpdates = updates[GameUpdateType.Player];
+    // Bots and nations may enter the simulation after the viewer's bootstrap.
+    // The engine's global delta history is not this viewer's introduction history.
+    for (const player of game.allPlayers()) {
+      if (bootstrap || !this.knownPlayers.has(player.id())) {
+        const index = playerUpdates.findIndex((p) => p.id === player.id());
+        const snapshot = player.snapshotView();
+        if (index >= 0) playerUpdates[index] = snapshot;
+        else playerUpdates.push(snapshot);
+        this.knownPlayers.add(player.id());
+      }
+    }
     this.initialized = true;
     // Explicitly public event families only. New event types must opt in after privacy review.
     const publicTypes = [
@@ -145,6 +158,7 @@ export class AuthoritativeView {
   }
   reset(): void {
     this.initialized = false;
+    this.knownPlayers.clear();
     this.known.clear();
     this.contacts.clear();
   }

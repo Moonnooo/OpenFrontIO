@@ -11,3 +11,5 @@ Recreate both services from `/opt/frontrank/compose.yaml`; verify the public ver
 The initial server-authoritative public rollout caps lobbies at 24 humans and rounds down to complete teams. Existing smaller lobbies, including ranked 1v1 and 2v2, retain their smaller capacity. Increase this limit only after measuring server simulation and filtered-view costs.
 
 Captured buildings retain their original construction and upgrade investment; completed voluntary demolition refunds half to the current owner. Public naval deployment still requires live approval.
+
+Prepared v0.2.7: authoritative bootstrap includes eliminated players, and each viewer receives complete first player updates before deltas. Last approved live release is v0.2.6; v0.2.7 awaits approval.
