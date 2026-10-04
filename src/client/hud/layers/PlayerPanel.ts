@@ -67,7 +67,7 @@ export class PlayerPanel extends LitElement implements Controller {
 
   private actions: PlayerActions | null = null;
   private tile: TileRef | null = null;
-  private _profileForPlayerId: number | null = null;
+  private _profileForPlayerId: string | null = null;
   private kickedPlayerIDs = new Set<string>();
 
   @state() private sendTarget: PlayerView | null = null;
@@ -147,9 +147,9 @@ export class PlayerPanel extends LitElement implements Controller {
         const pv = owner as PlayerView;
         const id = pv.id();
         // fetch only if we don't have it or the player changed
-        if (this._profileForPlayerId !== Number(id)) {
+        if (this._profileForPlayerId !== id) {
           this.otherProfile = await pv.profile();
-          this._profileForPlayerId = Number(id);
+          this._profileForPlayerId = id;
         }
       }
 

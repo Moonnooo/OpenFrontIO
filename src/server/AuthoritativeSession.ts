@@ -157,14 +157,37 @@ export class AuthoritativeSession {
       method === "player_actions" || method === "player_buildables";
     const x = positional ? coord(args[1], runner.game.width()) : undefined,
       y = positional ? coord(args[2], runner.game.height()) : undefined;
+    if (method === "player_profile" && args[0] !== player.smallID()) {
+      if (!Number.isInteger(args[0])) throw new Error("Invalid player");
+      const target = runner.game.playerBySmallID(args[0] as number);
+      if (!target.isPlayer()) throw new Error("Invalid player");
+      const profile = target.playerProfile();
+      // Only this viewer's relationship and public alliance membership are exposed.
+      return {
+        relations: { [player.smallID()]: profile.relations[player.smallID()] },
+        alliances: profile.alliances,
+      };
+    }
+    if (method === "attack_clustered_positions" && args[0] !== player.smallID())
+      return [];
     if (args[0] !== player.id() && args[0] !== player.smallID())
       throw new Error("Other players private queries are unavailable");
     // Bind every query to the authenticated player's identity. The client's requested player ID is ignored.
     switch (method) {
       case "player_actions":
-        return runner.playerActions(player.id(), x, y);
+        return runner.playerActions(
+          player.id(),
+          x,
+          y,
+          args[3] as Parameters<GameRunner["playerActions"]>[3],
+        );
       case "player_buildables":
-        return runner.playerBuildables(player.id(), x, y);
+        return runner.playerBuildables(
+          player.id(),
+          x,
+          y,
+          args[3] as Parameters<GameRunner["playerBuildables"]>[3],
+        );
       case "player_profile":
         return runner.playerProfile(player.smallID());
       case "player_border_tiles":

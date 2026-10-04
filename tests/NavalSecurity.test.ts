@@ -202,6 +202,21 @@ describe("server-authoritative submarine secrecy", () => {
     const result = new AuthoritativeView().project(game, a, frame());
     expect(result.updates[GameUpdateType.Unit][0].targetUnitId).toBeUndefined();
   });
+  it("returns a limited opponent profile and no opponent attack locations", async () => {
+    const session = Object.create(
+      AuthoritativeSession.prototype,
+    ) as AuthoritativeSession;
+    Object.assign(session, { ready: Promise.resolve({ game }) });
+    const profile = (await session.query("client_a", "player_profile", [
+      b.smallID(),
+    ])) as { relations: Record<string, unknown>; alliances: number[] };
+    expect(Object.keys(profile.relations)).toEqual([String(a.smallID())]);
+    expect(profile.alliances).toEqual(b.playerProfile().alliances);
+    await expect(
+      session.query("client_a", "attack_clustered_positions", [b.smallID()]),
+    ).resolves.toEqual([]);
+  });
+
   it("denies forged cross-player queries and private snapshot methods", async () => {
     const session = Object.create(
       AuthoritativeSession.prototype,

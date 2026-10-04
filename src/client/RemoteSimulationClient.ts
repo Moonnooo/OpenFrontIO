@@ -21,6 +21,8 @@ export class RemoteSimulationClient extends WorkerClient {
     string,
     { promise: Promise<unknown>; expires: number }
   >();
+  private queryChain: Promise<unknown> = Promise.resolve();
+  private closed = false;
   private query<T>(method: string, args: unknown[]): Promise<T> {
     const key = JSON.stringify([method, args]);
     const now = performance.now();
@@ -29,9 +31,16 @@ export class RemoteSimulationClient extends WorkerClient {
     const existing = this.queryCache.get(key);
     if (existing) return existing.promise as Promise<T>;
     const entry = {
-      promise: this.transport.authoritativeQuery<T>(method, args),
+      promise: this.queryChain.then(() => {
+        if (this.closed) throw new Error("Game ended");
+        return this.transport.authoritativeQuery<T>(method, args);
+      }),
       expires: Infinity,
     };
+    this.queryChain = entry.promise.then(
+      () => new Promise((resolve) => setTimeout(resolve, 50)),
+      () => new Promise((resolve) => setTimeout(resolve, 50)),
+    );
     this.queryCache.set(key, entry);
     void entry.promise.then(
       () => {
@@ -120,6 +129,7 @@ export class RemoteSimulationClient extends WorkerClient {
     return this.query("transport_ship_spawn", [playerID, targetTile]);
   }
   override cleanup(): void {
+    this.closed = true;
     this.transport.setAuthoritativeReceiver(undefined);
     this.receive = undefined;
     this.pending = [];

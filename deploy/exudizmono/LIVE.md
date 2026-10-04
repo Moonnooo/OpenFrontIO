@@ -13,3 +13,5 @@ The initial server-authoritative public rollout caps lobbies at 24 humans and ro
 Captured buildings retain their original construction and upgrade investment; completed voluntary demolition refunds half to the current owner. Public naval deployment still requires live approval.
 
 Prepared v0.2.7: authoritative bootstrap includes eliminated players, and each viewer receives complete first player updates before deltas. Last approved live release is v0.2.6; v0.2.7 awaits approval.
+
+Prepared v0.2.8: limited opponent profile queries, correct string player ID caching, paced/coalesced RPC requests and forwarding requested buildable filters. Live remains v0.2.7 pending approval.
