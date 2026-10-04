@@ -604,7 +604,7 @@ export class HostLobbyModal extends BaseModal {
                 class="mb-6 flex gap-3 items-start rounded-xl border border-cyan-400/30 p-4 text-white"
                 ><input
                   type="checkbox"
-                  aria-label="Server-authoritative naval test"
+                  aria-label="Server-authoritative naval mode"
                   .checked=${this.authoritativeNaval}
                   @change=${(e: Event) => {
                     this.authoritativeNaval = (
@@ -614,7 +614,7 @@ export class HostLobbyModal extends BaseModal {
                   }}
                 /><span
                   >Naval mode (experimental): submarines, sonar ships and depth
-                  charges. Private lobbies only.</span
+                  charges. Public lobbies enable this automatically.</span
                 ></label
               >`
             : nothing}

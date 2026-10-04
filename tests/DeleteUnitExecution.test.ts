@@ -113,12 +113,37 @@ describe("DeleteUnitExecution Security Tests", () => {
       expect(player.gold()).toBe(before + investment + (upgradePaid + 1n) / 2n);
     });
 
+    it("refunds captured construction and upgrades to the current owner exactly once", () => {
+      const refund = unit.demolitionRefund();
+      const originalGold = player.gold();
+      unit.setOwner(enemyPlayer);
+      unit.move(Array.from(enemyPlayer.tiles())[0]);
+      enemyPlayer.addGold(100000000n);
+      const funded = enemyPlayer.gold();
+      enemyPlayer.upgradeUnit(unit);
+      const upgradePaid = funded - enemyPlayer.gold();
+      const beforeDelete = enemyPlayer.gold();
+      const execution = new DeleteUnitExecution(enemyPlayer, unit.id());
+      execution.init(game, game.ticks());
+      expect(unit.isMarkedForDeletion()).toBe(true);
+      vi.spyOn(game, "ticks").mockReturnValue(game.ticks() + 11);
+      execution.tick(game.ticks());
+      expect(unit.isActive()).toBe(false);
+      expect(enemyPlayer.gold()).toBe(
+        beforeDelete + refund + (upgradePaid + 1n) / 2n,
+      );
+      expect(player.gold()).toBe(originalGold);
+      execution.tick(game.ticks());
+      expect(enemyPlayer.gold()).toBe(
+        beforeDelete + refund + (upgradePaid + 1n) / 2n,
+      );
+    });
+
     it("rounds odd payments up and ignores later price changes", () => {
       const fresh = player.buildUnit(UnitType.City, unit.tile(), {});
-      fresh.setOwner(enemyPlayer);
-      fresh.setOwner(player);
-      fresh.recordGoldInvestment(101n);
-      expect(fresh.demolitionRefund()).toBe(51n);
+      const paid = fresh.demolitionRefund();
+      fresh.recordGoldInvestment(102n);
+      expect(fresh.demolitionRefund()).toBe(paid + 51n);
       expect(unit.demolitionRefund()).toBeGreaterThan(0n);
     });
 
@@ -126,8 +151,9 @@ describe("DeleteUnitExecution Security Tests", () => {
       const before = player.gold();
       const execution = new DeleteUnitExecution(player, unit.id());
       execution.init(game, game.ticks());
+      const refund = unit.demolitionRefund();
       unit.setOwner(enemyPlayer);
-      expect(unit.demolitionRefund()).toBe(0n);
+      expect(unit.demolitionRefund()).toBe(refund);
       vi.spyOn(game, "ticks").mockReturnValue(game.ticks() + 11);
       execution.tick(game.ticks());
       expect(execution.isActive()).toBe(false);

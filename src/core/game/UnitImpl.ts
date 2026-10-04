@@ -260,7 +260,7 @@ export class UnitImpl implements Unit {
 
   setOwner(newOwner: PlayerImpl): void {
     this.clearPendingDeletion();
-    if (newOwner !== this._owner) this._goldInvestment = 0n;
+    // Construction value follows the building when it is captured.
     switch (this._type) {
       case UnitType.Warship:
       case UnitType.Port:
