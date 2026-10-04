@@ -1,10 +1,16 @@
 # Exudizmono release notes
 
-Running Exudizmono **v0.2.5**, based on OpenFront **v0.34.14-79-ge02eeba6**. [Exact upstream source](https://github.com/openfrontio/openfrontio/commit/e02eeba66b4801ebae0b686e1b0e4bc03fbf3654).
+Running Exudizmono **v0.2.6**, based on OpenFront **v0.34.14-79-ge02eeba6**. [Exact upstream source](https://github.com/openfrontio/openfrontio/commit/e02eeba66b4801ebae0b686e1b0e4bc03fbf3654).
 
 Choose OpenFront releases above for all 270 published release notes through **v0.34.14**. This main snapshot also contains commits after that tag; it is not a later tagged release. Release-specific branches are labelled individually. No notes for newer versions are presented as installed.
 
 Exudizmono changes below come from this fork’s actual commits. Dates are UTC.
+
+## Exudizmono v0.2.6
+
+2026-10-04 (UTC)
+
+- Preserve captured building value for demolition refunds. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/7ed2f54de26c89e2cc85e91ee5f9e96b82e8d5c2)
 
 ## Exudizmono v0.2.5
 
