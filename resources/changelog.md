@@ -1,15 +1,22 @@
 # Exudizmono release notes
 
-Running Exudizmono **v0.2.7**, based on OpenFront **v0.34.14-79-ge02eeba6**. [Exact upstream source](https://github.com/openfrontio/openfrontio/commit/e02eeba66b4801ebae0b686e1b0e4bc03fbf3654).
+Running Exudizmono **v0.2.8**, based on OpenFront **v0.34.14-79-ge02eeba6**. [Exact upstream source](https://github.com/openfrontio/openfrontio/commit/e02eeba66b4801ebae0b686e1b0e4bc03fbf3654).
 
 Choose OpenFront releases above for all 270 published release notes through **v0.34.14**. This main snapshot also contains commits after that tag; it is not a later tagged release. Release-specific branches are labelled individually. No notes for newer versions are presented as installed.
 
 Exudizmono changes below come from this fork’s actual commits. Dates are UTC.
 
+## Exudizmono v0.2.8
+
+2026-10-04 (UTC)
+
+- Fix authoritative profile queries and pace client RPC requests. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/2b97965f49bc85e9772e71982ccd86af3c532c55)
+
 ## Exudizmono v0.2.7
 
 2026-10-04 (UTC)
 
+- Refresh release notes for Exudizmono 0.2.7. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/8a80709766cc80062a8efb7f663ebe38ca2f7aa6)
 - Fix incomplete player introductions in authoritative multiplayer. [Change](https://github.com/Moonnooo/OpenFrontIO/commit/67d3080e633badd431953319ba2a2085ae77e370)
 
 ## Exudizmono v0.2.6
