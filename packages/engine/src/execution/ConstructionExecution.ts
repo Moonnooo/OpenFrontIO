@@ -1,0 +1,253 @@
+import { TileRef } from "@openfront/engine-api/game/GameMap";
+import { Tick, UnitType } from "@openfront/engine-api/game/GameTypes";
+import {
+  zInt,
+  zPlayerRef,
+  zRef,
+} from "@openfront/engine-lib/snapshot/SnapshotType";
+import { CityExecution } from "@openfront/engine/execution/CityExecution";
+import { DefensePostExecution } from "@openfront/engine/execution/DefensePostExecution";
+import { FactoryExecution } from "@openfront/engine/execution/FactoryExecution";
+import { MirvExecution } from "@openfront/engine/execution/MIRVExecution";
+import { MissileSiloExecution } from "@openfront/engine/execution/MissileSiloExecution";
+import { NukeExecution } from "@openfront/engine/execution/NukeExecution";
+import { PortExecution } from "@openfront/engine/execution/PortExecution";
+import { SAMLauncherExecution } from "@openfront/engine/execution/SAMLauncherExecution";
+import { WarshipExecution } from "@openfront/engine/execution/WarshipExecution";
+import { Execution, Game, Player, Unit } from "@openfront/engine/game/Game";
+import { UnitTypeSchema } from "@openfront/engine/snapshot/CommonSchemas";
+import { execSnapshotType } from "@openfront/engine/snapshot/ExecutionSnapshot";
+import type {
+  ExecRecord,
+  SnapshotReader,
+  SnapshotWriter,
+} from "@openfront/engine/snapshot/SnapshotContext";
+import { z } from "zod";
+
+export class ConstructionExecution implements Execution {
+  private structure: Unit | null = null;
+  private active: boolean = true;
+  private mg: Game;
+
+  private ticksUntilComplete: Tick;
+
+  constructor(
+    private player: Player,
+    private constructionType: UnitType,
+    private tile: TileRef,
+    private rocketDirectionUp?: boolean,
+    private amount?: number,
+    private navalVariant?: "warship" | "submarine" | "sonar",
+  ) {}
+
+  init(mg: Game, ticks: number): void {
+    this.mg = mg;
+
+    if (this.mg.config().isUnitDisabled(this.constructionType)) {
+      console.warn(
+        `cannot build construction ${this.constructionType} because it is disabled`,
+      );
+      this.active = false;
+      return;
+    }
+
+    if (!this.mg.isValidRef(this.tile)) {
+      console.warn(`cannot build construction invalid tile ${this.tile}`);
+      this.active = false;
+      return;
+    }
+  }
+
+  tick(ticks: number): void {
+    if (this.structure === null) {
+      const info = this.mg.unitInfo(this.constructionType);
+      // For non-structure units (nukes/warship), charge once and delegate to specialized executions.
+      const isStructure = this.isStructure(this.constructionType);
+      if (!isStructure) {
+        // Defer validation and gold deduction to the specific execution
+        this.completeConstruction();
+        this.active = false;
+        return;
+      }
+
+      // Structures: build real unit and mark under construction
+      const spawnTile = this.player.canBuild(this.constructionType, this.tile);
+      if (spawnTile === false) {
+        console.warn(`cannot build ${this.constructionType}`);
+        this.active = false;
+        return;
+      }
+      this.structure = this.player.buildUnit(
+        this.constructionType,
+        spawnTile,
+        {},
+      );
+      const duration = info.constructionDuration ?? 0;
+      if (duration > 0) {
+        this.structure.setUnderConstruction(true);
+        this.ticksUntilComplete = duration;
+        return;
+      }
+      // No construction time
+      this.completeConstruction();
+      this.active = false;
+      return;
+    }
+
+    if (!this.structure.isActive()) {
+      this.active = false;
+      return;
+    }
+
+    if (this.player !== this.structure.owner()) {
+      this.player = this.structure.owner();
+    }
+
+    if (this.ticksUntilComplete === 0) {
+      this.player = this.structure.owner();
+      this.completeConstruction();
+      this.active = false;
+      return;
+    }
+    this.ticksUntilComplete--;
+  }
+
+  private completeConstruction() {
+    if (this.structure) {
+      this.structure.setUnderConstruction(false);
+    }
+    const player = this.player;
+    switch (this.constructionType) {
+      case UnitType.AtomBomb:
+      case UnitType.HydrogenBomb: {
+        const count = this.amount ?? 1;
+        for (let i = 0; i < count; i++) {
+          // NukeExecution staggers same-tick launches per silo itself.
+          this.mg.addExecution(
+            new NukeExecution(
+              this.constructionType,
+              player,
+              this.tile,
+              null,
+              -1,
+              0,
+              this.rocketDirectionUp,
+            ),
+          );
+        }
+        break;
+      }
+      case UnitType.MIRV:
+        this.mg.addExecution(new MirvExecution(player, this.tile));
+        break;
+      case UnitType.Warship:
+        this.mg.addExecution(
+          new WarshipExecution({
+            owner: player,
+            patrolTile: this.tile,
+            navalVariant: this.navalVariant,
+          }),
+        );
+        break;
+      case UnitType.Port:
+        this.mg.addExecution(new PortExecution(this.structure!));
+        break;
+      case UnitType.MissileSilo:
+        this.mg.addExecution(new MissileSiloExecution(this.structure!));
+        break;
+      case UnitType.DefensePost:
+        this.mg.addExecution(new DefensePostExecution(this.structure!));
+        break;
+      case UnitType.SAMLauncher:
+        this.mg.addExecution(
+          new SAMLauncherExecution(player, null, this.structure!),
+        );
+        break;
+      case UnitType.City:
+        this.mg.addExecution(new CityExecution(this.structure!));
+        break;
+      case UnitType.Factory:
+        this.mg.addExecution(new FactoryExecution(this.structure!));
+        break;
+      default:
+        console.warn(
+          `unit type ${this.constructionType} cannot be constructed`,
+        );
+        break;
+    }
+  }
+
+  private isStructure(type: UnitType): boolean {
+    switch (type) {
+      case UnitType.Port:
+      case UnitType.MissileSilo:
+      case UnitType.DefensePost:
+      case UnitType.SAMLauncher:
+      case UnitType.City:
+      case UnitType.Factory:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  isActive(): boolean {
+    return this.active;
+  }
+
+  activeDuringSpawnPhase(): boolean {
+    return false;
+  }
+
+  snapshot(w: SnapshotWriter): ExecRecord {
+    return ConstructionExecutionSnapshot.write({
+      active: this.active,
+      initialized: this.mg !== undefined,
+      player: w.player(this.player),
+      constructionType: this.constructionType,
+      tile: this.tile,
+      rocketDirectionUp: this.rocketDirectionUp,
+      amount: this.amount,
+      navalVariant: this.navalVariant,
+      structure: w.unitOrNull(this.structure),
+      ticksUntilComplete: this.ticksUntilComplete,
+    });
+  }
+
+  restoreSnapshot(s: ConstructionState, r: SnapshotReader): void {
+    this.active = s.active;
+    if (s.initialized) this.mg = r.game;
+    this.player = r.player(s.player);
+    this.constructionType = s.constructionType;
+    this.tile = s.tile;
+    this.rocketDirectionUp = s.rocketDirectionUp;
+    this.amount = s.amount;
+    this.navalVariant = s.navalVariant;
+    this.structure = r.unitOrNull(s.structure);
+    this.ticksUntilComplete = s.ticksUntilComplete as Tick;
+  }
+}
+
+const ConstructionStateSchema = z.object({
+  active: z.boolean(),
+  initialized: z.boolean(),
+  player: zPlayerRef(),
+  constructionType: UnitTypeSchema,
+  // Validated in init, so a pending execution may hold any number.
+  tile: zInt(),
+  rocketDirectionUp: z.boolean().optional(),
+  amount: zInt().optional(),
+  navalVariant: z.enum(["warship", "submarine", "sonar"]).optional(),
+  structure: zRef().nullable(),
+  // Unset until a structure with a build time is placed.
+  ticksUntilComplete: zInt().optional(),
+});
+type ConstructionState = z.infer<typeof ConstructionStateSchema>;
+
+export const ConstructionExecutionSnapshot = execSnapshotType({
+  name: "Construction",
+  version: 2,
+  migrations: { 1: (data) => data },
+  schema: ConstructionStateSchema,
+  cls: () => ConstructionExecution,
+});

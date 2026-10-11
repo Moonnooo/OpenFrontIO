@@ -1,3 +1,4 @@
+import { TileRef } from "@openfront/engine-api/game/GameMap";
 import {
   BuildableUnit,
   Cell,
@@ -6,13 +7,15 @@ import {
   PlayerBuildableUnitType,
   PlayerID,
   PlayerProfile,
-} from "../core/game/Game";
-import { TileRef } from "../core/game/GameMap";
-import { ErrorUpdate, GameUpdateViewData } from "../core/game/GameUpdates";
-import { decodeView } from "../core/net/AuthoritativeCodec";
-import { ClientID, GameStartInfo, Turn } from "../core/Schemas";
-import { WorkerClient } from "../core/worker/WorkerClient";
+} from "@openfront/engine-api/game/GameTypes";
+import {
+  ErrorUpdate,
+  GameUpdateViewData,
+} from "@openfront/engine-api/game/GameUpdates";
+import { ClientID, GameStartInfo, Turn } from "@openfront/engine-api/Schemas";
+import { decodeView } from "@openfront/shared/AuthoritativeCodec";
 import { Transport } from "./Transport";
+import { WorkerClient } from "./WorkerClient";
 /** Rendering and input only. This client never starts a simulation worker or consumes other players' intents. */
 export class RemoteSimulationClient extends WorkerClient {
   private receive?: (frame: GameUpdateViewData | ErrorUpdate) => void;

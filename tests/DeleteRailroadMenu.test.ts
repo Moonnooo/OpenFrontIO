@@ -1,9 +1,9 @@
+import { UnitType } from "@openfront/engine-api/game/GameTypes";
 import { describe, expect, it, vi } from "vitest";
 import {
   deleteUnitElement,
   type MenuElementParams,
 } from "../src/client/hud/layers/RadialMenuElements";
-import { UnitType } from "../src/core/game/Game";
 function params(rails: number[]) {
   return {
     tile: 22,

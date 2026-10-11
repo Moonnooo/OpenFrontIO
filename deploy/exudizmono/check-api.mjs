@@ -1,7 +1,7 @@
+import { GameRecordSchema } from "@openfront/shared/WireSchemas";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
-import { GameRecordSchema } from "./src/core/Schemas.ts";
 const dir = fs.mkdtempSync("/tmp/frontrank-test-");
 const child = spawn(process.execPath, ["--import", "tsx", "api.mjs"], {
   env: {

@@ -1,3 +1,4 @@
+import { GameRecordSchema } from "@openfront/shared/WireSchemas";
 import { SignJWT, importJWK, jwtVerify } from "jose";
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -14,7 +15,6 @@ import {
   rebuildRatings,
   variantOf,
 } from "./leaderboards.mjs";
-import { GameRecordSchema } from "./src/core/Schemas.ts";
 const dir = process.env.DATA_DIR || "/data";
 fs.mkdirSync(dir + "/archives", { recursive: true });
 const keyPath = dir + "/signing-key.json";

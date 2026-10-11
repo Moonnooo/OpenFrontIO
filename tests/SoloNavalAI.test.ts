@@ -1,29 +1,30 @@
-import { describe, expect, it } from "vitest";
-import { NationEmojiBehavior } from "../src/core/execution/nation/NationEmojiBehavior";
-import { NationWarshipBehavior } from "../src/core/execution/nation/NationWarshipBehavior";
-import { tickNavalAI } from "../src/core/execution/utils/AiNavalBehavior";
 import {
-  Game,
   GameMapSize,
   GameType,
   PlayerInfo,
   PlayerType,
   UnitType,
-} from "../src/core/game/Game";
-import { createGame } from "../src/core/game/GameImpl";
-import { GameMapImpl } from "../src/core/game/GameMap";
+} from "@openfront/engine-api/game/GameTypes";
 import {
   ErrorUpdate,
   GameUpdateType,
   GameUpdateViewData,
-} from "../src/core/game/GameUpdates";
-import { navalUnitsEnabled } from "../src/core/game/NavalCombat";
+} from "@openfront/engine-api/game/GameUpdates";
+import { GameMapImpl } from "@openfront/engine-lib/game/GameMapImpl";
+import { PseudoRandom } from "@openfront/engine-lib/PseudoRandom";
+import { NationEmojiBehavior } from "@openfront/engine/execution/nation/NationEmojiBehavior";
+import { NationWarshipBehavior } from "@openfront/engine/execution/nation/NationWarshipBehavior";
+import { tickNavalAI } from "@openfront/engine/execution/utils/AiNavalBehavior";
+import { Game } from "@openfront/engine/game/Game";
+import { createGame } from "@openfront/engine/game/GameImpl";
+import { navalUnitsEnabled } from "@openfront/engine/game/NavalCombat";
 import {
   createGameRunner,
   createGameRunnerFromSnapshot,
-} from "../src/core/GameRunner";
-import { AuthoritativeView } from "../src/core/net/AuthoritativeView";
-import { PseudoRandom } from "../src/core/PseudoRandom";
+} from "@openfront/engine/GameRunner";
+import { AuthoritativeView } from "@openfront/engine/net/AuthoritativeView";
+import { loadMapFiles } from "@openfront/shared/GameMapLoader";
+import { describe, expect, it } from "vitest";
 import { scriptedGameStart, TestDataMapLoader } from "./util/ScriptedGame";
 import { setup } from "./util/Setup";
 function coast() {
@@ -190,7 +191,11 @@ describe("solo worker integration", () => {
     const runner = await createGameRunner(
       info,
       "HUMAN001",
-      new TestDataMapLoader("world"),
+      await loadMapFiles(
+        new TestDataMapLoader("world"),
+        info.config.gameMap,
+        info.config.gameMapSize,
+      ),
       callback,
     );
     const game = runner.game;
@@ -220,7 +225,11 @@ describe("solo worker integration", () => {
       info,
       runner.snapshot(),
       "HUMAN001",
-      new TestDataMapLoader("world"),
+      await loadMapFiles(
+        new TestDataMapLoader("world"),
+        info.config.gameMap,
+        info.config.gameMapSize,
+      ),
       callback,
     );
     expect(restored.game.config().gameConfig().navalUnits).toBe(true);

@@ -1,3 +1,4 @@
+import type { NameEntry } from "../../../render/types";
 /**
  * ReplayReader rebuilds the game state at any frame.
  *
@@ -19,7 +20,7 @@
  */
 
 import { FALLOUT_BIT } from "../../../render/gl/utils/TileCodec";
-import type { NameEntry, PlayerState, UnitState } from "../../../render/types";
+import type { PlayerState, UnitState } from "../../../render/types";
 import { BinaryReader } from "../BinaryReader";
 import {
   FRAME_DELTA,

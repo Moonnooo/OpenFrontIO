@@ -1,39 +1,42 @@
-import { createHash, randomBytes } from "crypto";
-import ipAnonymize from "ip-anonymize";
-import { Logger } from "winston";
-import WebSocket from "ws";
-import { z } from "zod";
-import { ZbContext } from "../../zbin";
-import { isAdminRole } from "../core/ApiSchemas";
-import { CloseCode, CloseReason } from "../core/CloseCodes";
-import { GameEnv } from "../core/configuration/Config";
 import {
   GameMode,
   GameType,
   HumansVsNations,
   PlayerInfo,
   PlayerType,
+  RANKED_FFA_MIN_PLAYERS,
   RankedType,
-} from "../core/game/Game";
-import { GameUpdateType } from "../core/game/GameUpdates";
-import { maps } from "../core/game/Maps.gen";
+} from "@openfront/engine-api/game/GameTypes";
+import { GameUpdateType } from "@openfront/engine-api/game/GameUpdates";
+import { maps } from "@openfront/engine-api/game/Maps.gen";
+import {
+  AllPlayersStats,
+  ClientID,
+  GameConfig,
+  GameConfigPatch,
+  GameID,
+  Intent,
+  StampedIntent,
+  TeamCountConfig,
+  Tribe,
+  Turn,
+  Winner,
+} from "@openfront/engine-api/Schemas";
 import {
   assignTeamsLobbyPreview,
   resolveTeamsList,
-} from "../core/game/TeamAssignment";
-import { decodeView, encodeView } from "../core/net/AuthoritativeCodec";
+} from "@openfront/engine-lib/game/TeamAssignment";
+import { isAdminRole } from "@openfront/shared/ApiSchemas";
+import { decodeView, encodeView } from "@openfront/shared/AuthoritativeCodec";
+import { CloseCode, CloseReason } from "@openfront/shared/CloseCodes";
+import { GameEnv } from "@openfront/shared/configuration/Env";
+import { createPartialGameRecord } from "@openfront/shared/SharedUtil";
 import {
-  ClientID,
   ClientMessage,
   ClientReportMessage,
   ClientSendLiveStatsMessage,
   ClientSendWinnerMessage,
-  GameConfig,
-  GameID,
   GameInfo,
-  GameStartInfo,
-  GameStartInfoSchema,
-  Intent,
   LobbyAccent,
   PartialGameRecord,
   PlayerLiveStats,
@@ -49,18 +52,24 @@ import {
   ServerRedirectMessage,
   ServerStartGameMessage,
   ServerTurnMessage,
-  StampedIntent,
-  TeamCountConfig,
-  Tribe,
-  Turn,
-} from "../core/Schemas";
-import { createPartialGameRecord } from "../core/Util";
-import { createGameWireContext, encodeServerMessage } from "../core/ZbinWire";
+  WireGameStartInfo,
+  WireGameStartInfoSchema,
+} from "@openfront/shared/WireSchemas";
+import {
+  createGameWireContext,
+  encodeServerMessage,
+} from "@openfront/shared/ZbinWire";
+import { ZbContext } from "@openfront/zbin/context";
+import { createHash, randomBytes } from "crypto";
+import ipAnonymize from "ip-anonymize";
+import { Logger } from "winston";
+import WebSocket from "ws";
+import { z } from "zod";
 import { archive, finalizeGameRecord } from "./Archive";
 import { AuthoritativeSession } from "./AuthoritativeSession";
 import { Client } from "./Client";
 import { applyGameConfigPatch, hostCheatsEnabled } from "./ConfigPatch";
-import { LiveStatsVote, WinnerVote } from "./Consensus";
+import { LiveStatsVote, voteKey, WinnerVote } from "./Consensus";
 import { fetchCustomTribes } from "./CustomTribes";
 import { DesyncDetector } from "./DesyncDetector";
 import {
@@ -85,6 +94,11 @@ import {
   noopMatchTelemetryEmitter,
   type MatchTelemetryEmitter,
 } from "./telemetry/MatchTelemetry";
+import {
+  replayWinnerInChild,
+  winnerReplayMetrics,
+  type WinnerReplayer,
+} from "./WinnerReplay";
 
 // Outcome of GameServer.joinClient. The worker maps each to a close code.
 // A non-spectator join landing this soon after start() is someone who meant
@@ -153,6 +167,8 @@ export interface GameServerDeps {
   // deployment (finalizeGameRecord) first; a test receives the record as the
   // game built it.
   archive: (record: PartialGameRecord) => Promise<void>;
+  // Replays the game to settle a disputed winner vote (see settleWinner).
+  replayWinner: WinnerReplayer;
   fetchTribes: typeof fetchCustomTribes;
   env: () => GameEnv;
   turnIntervalMs: () => number;
@@ -176,6 +192,7 @@ function mintGroupToken(): string {
 export function defaultGameServerDeps(): GameServerDeps {
   return {
     archive: (record) => archive(finalizeGameRecord(record)),
+    replayWinner: replayWinnerInChild,
     fetchTribes: fetchCustomTribes,
     env: () => ServerEnv.env(),
     turnIntervalMs: () => ServerEnv.turnIntervalMs(),
@@ -215,7 +232,7 @@ export class GameServer {
   // archives on that, and the socket close events that follow end() still
   // go through hasStarted() in handleClientDisconnect.
   private authoritative?: AuthoritativeSession;
-  private authorityWinner?: import("../core/game/GameUpdates").WinUpdate;
+  private authorityWinner?: import("@openfront/engine-api/game/GameUpdates").WinUpdate;
 
   private stage: "lobby" | "prestart" | "started" = "lobby";
   // Set when the delayed start found an empty roster (see deferStart).
@@ -230,11 +247,11 @@ export class GameServer {
   private lastPingUpdate = 0;
 
   // Note: This can be undefined if accessed before the game starts.
-  private gameStartInfo!: GameStartInfo;
+  private gameStartInfo!: WireGameStartInfo;
   // Wire-only copy of gameStartInfo sent to clients. Identical to
   // gameStartInfo unless disableClanTags is set, in which case clan tags
   // are stripped from players. Archive uses the original gameStartInfo.
-  private wireGameStartInfo!: GameStartInfo;
+  private wireGameStartInfo!: WireGameStartInfo;
 
   // clientID dictionary for the binary wire, seeded from gameStartInfo.players
   // at start (clients seed theirs from the same array in the start message).
@@ -355,8 +372,23 @@ export class GameServer {
       : undefined;
   }
 
-  public updateGameConfig(gameConfig: Partial<GameConfig>): void {
+  public updateGameConfig(gameConfig: GameConfigPatch): void {
     applyGameConfigPatch(this.gameConfig, gameConfig);
+    // A lowered cap (the admin bot can set one) may already be met; without
+    // this the lobby would wait for the next join to notice it is full.
+    this.markFullIfAutoStarting();
+  }
+
+  // Filling up starts host-less games (public, matchmade, admin bot) and
+  // listed lobbies. An unlisted lobby's player limit only turns players
+  // away: its host still starts it.
+  private markFullIfAutoStarting(): void {
+    if (
+      (this.creatorPersistentID === undefined || this.isListed()) &&
+      this.playerCount() >= (this.gameConfig.maxPlayers ?? Infinity)
+    ) {
+      this.hasReachedMaxPlayerCount = true;
+    }
   }
 
   // Dispatch a control/gameplay intent from either a websocket client or the
@@ -689,9 +721,7 @@ export class GameServer {
     this.ingress.attach(client);
     this.startLobbyInfoBroadcast();
 
-    if (this.playerCount() >= (this.gameConfig.maxPlayers ?? Infinity)) {
-      this.hasReachedMaxPlayerCount = true;
-    }
+    this.markFullIfAutoStarting();
 
     // A spectator arriving mid-game missed the start message.
     if (this.stage === "started") {
@@ -933,19 +963,25 @@ export class GameServer {
   // Matchmade ranked games (1v1/2v2) must start with full attendance: the
   // roster freezes at start(), so a game missing a player would run
   // short-handed only to be voided by the sim (2v2) or hand out a walkover
-  // the absent player never contested (1v1). Called at the start deadline;
-  // cancels the game and returns true when a matched player never connected.
+  // the absent player never contested (1v1). Ranked FFA starts without the
+  // missing players as long as RANKED_FFA_MIN_PLAYERS showed up, the fewest
+  // the API rates. Called at the start deadline; cancels the game and returns
+  // true when too few matched players connected.
   public cancelShortHandedMatch(): boolean {
-    // Explicitly 1v1/2v2 only — a future ranked type must opt in rather
+    // Explicitly 1v1/2v2/FFA only — a future ranked type must opt in rather
     // than inherit pre-start cancellation.
     const rankedType = this.gameConfig.rankedType;
+    let expected: number | undefined;
     if (
-      rankedType !== RankedType.OneVOne &&
-      rankedType !== RankedType.TwoVTwo
+      rankedType === RankedType.OneVOne ||
+      rankedType === RankedType.TwoVTwo
     ) {
+      expected = this.gameConfig.maxPlayers;
+    } else if (rankedType === RankedType.FreeForAll) {
+      expected = RANKED_FFA_MIN_PLAYERS;
+    } else {
       return false;
     }
-    const expected = this.gameConfig.maxPlayers;
     if (expected === undefined || this.playerCount() >= expected) {
       return false;
     }
@@ -1168,7 +1204,7 @@ export class GameServer {
     delete config.allowedPublicIds;
     delete config.nameRevealPublicIds;
 
-    const result = GameStartInfoSchema.safeParse({
+    const result = WireGameStartInfoSchema.safeParse({
       gameID: this.id,
       lobbyCreatedAt: this.createdAt,
       visibleAt: this.visibleAt,
@@ -1189,7 +1225,7 @@ export class GameServer {
       this.log.error("Error parsing game start info", { message: error });
       return;
     }
-    this.gameStartInfo = result.data satisfies GameStartInfo;
+    this.gameStartInfo = result.data satisfies WireGameStartInfo;
     this.telemetry.emit(
       "match_started",
       {
@@ -1627,7 +1663,7 @@ export class GameServer {
       } else {
         // Not awaited: the upload handles its own failures (Archive.ts), and
         // waiting would only hold up GameManager's prune of this game.
-        this.archiveGame();
+        this.settleWinner();
       }
     } catch (error) {
       let errorDetails;
@@ -2046,25 +2082,95 @@ export class GameServer {
     });
   }
 
-  private archiveGame() {
-    const winner = this.authorityWinner ?? this.winnerVote.winner();
+  // Archives the game once its winner is settled. Normally the vote settles
+  // it, but a vote is only as good as its voters: when they disagree -- some
+  // client named a different winner or sent different stats, or the game
+  // ended with no majority -- the server replays the game itself and
+  // archives what the simulation says. The record waits for the replay; if
+  // the replay fails, the vote's result (if any) goes out instead.
+  private settleWinner() {
+    if (this.authorityWinner !== undefined) {
+      this.archiveGame(this.authorityWinner);
+      return;
+    }
+    const voted = this.winnerVote.winner();
+    const candidates = this.winnerVote.candidates();
+    if (candidates === 0 || (candidates === 1 && voted !== null)) {
+      this.archiveGame(voted);
+      return;
+    }
+    // The record as of now; the game may run on while the replay does.
+    const turns = this.turns.slice();
+    const endTime = Date.now();
+    this.log.warn("winner vote disputed, replaying game", {
+      gameID: this.id,
+      voted: voted?.winner,
+      candidates,
+      turns: turns.length,
+    });
+    this.deps
+      .replayWinner(this.wireGameStartInfo, turns)
+      .then((replayed) => {
+        if (replayed === null) {
+          winnerReplayMetrics.outcomes.failed++;
+          this.archiveGame(voted, turns, endTime);
+          return;
+        }
+        const replayedKey = voteKey(replayed);
+        const agrees =
+          voted === null
+            ? replayed.winner === undefined
+            : voteKey(voted) === replayedKey;
+        const outcome = agrees ? "agreed" : "overturned";
+        winnerReplayMetrics.outcomes[outcome]++;
+        this.log[agrees ? "info" : "warn"]("winner replay result", {
+          gameID: this.id,
+          voted: voted?.winner,
+          replayed: replayed.winner,
+          winTick: replayed.tick,
+          agrees,
+        });
+        // A vote is the client's own simulation's result, so an honest,
+        // in-sync client votes what the replay found, winner and stats
+        // (desynced clients' votes were dropped). One line per voter who
+        // didn't, departed ones included, so they can be counted per player:
+        // likely cheaters.
+        for (const client of this.clients.all().values()) {
+          const vote = client.reportedVote;
+          if (vote === null || vote.key === replayedKey) {
+            continue;
+          }
+          this.log.warn("wrong winner vote", {
+            gameID: this.id,
+            publicID: client.publicId,
+            clientID: client.clientID,
+            voted: vote.winner,
+            replayed: replayed.winner,
+            // The winner was right, only the stats differed.
+            wrongStats:
+              JSON.stringify(vote.winner ?? null) ===
+              JSON.stringify(replayed.winner ?? null),
+            outcome,
+          });
+        }
+        this.archiveGame(replayed, turns, endTime);
+      })
+      .catch((error) => {
+        this.log.error(`error archiving replayed game: ${error}`, {
+          gameID: this.id,
+        });
+      });
+  }
+
+  private archiveGame(
+    winner: { winner?: Winner; allPlayersStats: AllPlayersStats } | null,
+    turns: Turn[] = this.turns,
+    endTime: number = Date.now(),
+  ) {
     this.log.info("archiving game", {
       gameID: this.id,
       winner: winner?.winner,
     });
-
-    // The record carries the first winning voter's stats, unchecked. Before
-    // the vote can also be made to agree on stats, measure how often honest
-    // voters actually differ: a "split" here means they did.
-    const agreement = this.winnerVote.statsAgreement();
-    if (agreement !== null) {
-      const split = agreement.versions > 1;
-      this.log[split ? "warn" : "info"]("winner stats agreement", {
-        gameID: this.id,
-        statsAgreement: split ? "split" : "agreed",
-        ...agreement,
-      });
-    }
 
     // Players must stay in the same order as the game start info.
     const playerRecords: PlayerRecord[] = this.gameStartInfo.players.map(
@@ -2098,9 +2204,9 @@ export class GameServer {
         this.id,
         this.gameStartInfo.config,
         playerRecords,
-        this.turns,
+        turns,
         this._startTime ?? 0,
-        Date.now(),
+        endTime,
         winner?.winner,
         this.createdAt,
         this.visibleAt,
@@ -2190,17 +2296,17 @@ export class GameServer {
       this.desync.isDesynced(client.clientID) ||
       this.isKicked(client.clientID) ||
       this.winnerVote.winner() !== null ||
-      client.reportedWinner !== null
+      client.reportedVote !== null
     ) {
       return;
     }
-    client.reportedWinner = clientMsg.winner;
 
     const activeUniqueIPs = this.clients.votingUniqueIPs();
     const { key: winnerKey, votes } = this.winnerVote.cast(
       clientMsg,
       client.ip,
     );
+    client.reportedVote = { winner: clientMsg.winner, key: winnerKey };
 
     this.log.info(
       `received winner vote ${clientMsg.winner}, ${votes}/${activeUniqueIPs} votes for this winner`,
@@ -2221,7 +2327,7 @@ export class GameServer {
         winnerKey,
       },
     );
-    this.archiveGame();
+    this.settleWinner();
   }
 
   // Votes are otherwise only tallied when one arrives (handleWinner), so a
@@ -2243,7 +2349,7 @@ export class GameServer {
     this.log.info(
       `Winner determined by ${result.votes}/${activeIPs.size} active IPs after electorate shrank`,
     );
-    this.archiveGame();
+    this.settleWinner();
   }
 
   // Clients each send a live stats snapshot every ~10s tagged with the turn it

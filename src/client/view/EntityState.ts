@@ -1,3 +1,4 @@
+import { PlayerStatic, PlayerTypeEnum } from "../render/types";
 /**
  * Conversions from engine updates (PlayerUpdate / UnitUpdate) to the
  * renderer's PlayerState / PlayerStatic / UnitState records.
@@ -6,16 +7,17 @@
  * (src/client/replay/codec) can use them in a worker and get the same records as
  * the live client.
  */
-import { PlayerID, PlayerType, TrainType } from "../../core/game/Game";
-import { PlayerUpdate, UnitUpdate } from "../../core/game/GameUpdates";
-import { ATTACK_DELTA_OUTGOING } from "../../core/game/GameUpdateUtils";
 import {
-  PlayerState,
-  PlayerStatic,
-  PlayerTypeEnum,
-  TrainType as RendererTrainType,
-  UnitState,
-} from "../render/types";
+  PlayerID,
+  PlayerType,
+  TrainType,
+} from "@openfront/engine-api/game/GameTypes";
+import {
+  ATTACK_DELTA_OUTGOING,
+  PlayerUpdate,
+  UnitUpdate,
+} from "@openfront/engine-api/game/GameUpdates";
+import { PlayerState, UnitState } from "../render/types";
 
 /**
  * Convert engine TrainType (string enum) to renderer's numeric encoding.
@@ -131,7 +133,7 @@ export function playerTypeFromEnum(t: PlayerTypeEnum): PlayerType {
 
 // First-emission updates from the engine always include every field; these
 // builders assert non-null for that contract. Subsequent diffs are partial
-// and flow through applyStateUpdate() (GameUpdateUtils).
+// and flow through applyStateUpdate() (PlayerStateUpdate).
 export function playerStaticFromUpdate(pu: PlayerUpdate): PlayerStatic {
   return {
     smallID: pu.smallID!,
@@ -252,3 +254,5 @@ export function applyPackedAttackTroops(
     opts.applied?.(packed[i]);
   }
 }
+
+import { TrainType as RendererTrainType } from "../render/types";

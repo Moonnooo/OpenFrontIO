@@ -1,7 +1,7 @@
+import type { GameStartInfo } from "@openfront/engine-api/Schemas";
 import { describe, expect, it, vi } from "vitest";
 import { RemoteSimulationClient } from "../../src/client/RemoteSimulationClient";
 import type { Transport } from "../../src/client/Transport";
-import type { GameStartInfo } from "../../src/core/Schemas";
 vi.mock("../../src/core/worker/WorkerClient", () => ({
   WorkerClient: class {},
 }));

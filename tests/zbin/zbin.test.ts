@@ -1,12 +1,12 @@
-import { describe, expect, it } from "vitest";
-import { z } from "zod";
+import { zb } from "@openfront/zbin";
 import {
   ByteReader,
   ByteWriter,
-  zb,
   ZbDecodeError,
   ZbEncodeError,
-} from "../../zbin";
+} from "@openfront/zbin/bytes";
+import { describe, expect, it } from "vitest";
+import { z } from "zod";
 
 describe("byte primitives", () => {
   it("round-trips uints across the full safe range", () => {

@@ -1,3 +1,4 @@
+import type { AllianceData, AttackData, EmojiData } from "../../render/types";
 /**
  * Field tables for serializing PlayerState and UnitState. The encoder and
  * decoder both walk these tables, so each field is declared in one place.
@@ -11,13 +12,7 @@
  * value comes back exactly.
  */
 
-import type {
-  AllianceData,
-  AttackData,
-  EmojiData,
-  PlayerState,
-  UnitState,
-} from "../../render/types";
+import type { PlayerState, UnitState } from "../../render/types";
 import { BinaryReader } from "./BinaryReader";
 import { BinaryWriter, unzigzag, zigzag } from "./BinaryWriter";
 

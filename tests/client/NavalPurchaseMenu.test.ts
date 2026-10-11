@@ -1,8 +1,8 @@
+import { GameType, UnitType } from "@openfront/engine-api/game/GameTypes";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { UnitDisplay } from "../../src/client/hud/layers/UnitDisplay";
 import type { UIState } from "../../src/client/UIState";
 import type { GameView } from "../../src/client/view";
-import { GameType, UnitType } from "../../src/core/game/Game";
 vi.mock("../../src/client/Utils", () => ({
   translateText: (key: string) => key,
   renderNumber: (n: bigint | number) => String(n),
@@ -56,13 +56,13 @@ describe("naval purchase menu", () => {
           .join(" "),
       ),
     ).toEqual([
-      "Warship 1000 gold",
-      "Submarine 1500 gold",
-      "Sonar ship 1500 gold",
+      "Warship 1.00K gold",
+      "Submarine 1.50K gold",
+      "Sonar ship 1.50K gold",
     ]);
     choices[1].dispatchEvent(new MouseEvent("mouseenter"));
     await display.updateComplete;
-    expect(choices[1].title).toContain("1500 gold");
+    expect(choices[1].title).toContain("1.50K gold");
     choices[1].click();
     await display.updateComplete;
     expect(display.uiState.navalVariant).toBe("submarine");

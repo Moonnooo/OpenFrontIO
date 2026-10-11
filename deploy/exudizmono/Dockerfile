@@ -2,6 +2,7 @@ FROM node:24-slim
 WORKDIR /app
 RUN npm install --global --ignore-scripts npm@12.1.0
 COPY package*.json .npmrc ./
+COPY packages ./packages
 RUN npm ci --ignore-scripts
 COPY . .
 RUN mkdir -p proprietary && npm run build-prod

@@ -21,3 +21,4 @@ proprietary
 .frontrank-patched
 
 **/preview.env
+scripts/split-packages/

@@ -1,4 +1,4 @@
-import { SONAR_RADIUS } from "../../../../core/game/NavalCombat";
+import { SONAR_RADIUS } from "@openfront/engine-lib/game/NavalRules";
 import type { AttackRingInput, UnitState } from "../../types";
 import { UT_TRANSPORT } from "../../types";
 

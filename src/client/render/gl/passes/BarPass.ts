@@ -1,3 +1,4 @@
+import type { RendererConfig } from "../../types";
 /**
  * BarPass — instanced health/progress bars and warship veterancy pips.
  *
@@ -12,10 +13,10 @@
  *   UnitState.veterancy → one instance per level (x, y, slot) → solid gold rect
  */
 
-import type { Config } from "../../../../core/configuration/Config";
-import { UnitType } from "../../../../core/game/Game";
-import { maxHealthWithVeterancy } from "../../../../core/game/Veterancy";
-import type { RendererConfig, UnitState } from "../../types";
+import { UnitType } from "@openfront/engine-api/game/GameTypes";
+import type { Config } from "@openfront/engine-lib/configuration/Config";
+import { maxHealthWithVeterancy } from "@openfront/engine-lib/game/Veterancy";
+import type { UnitState } from "../../types";
 import { UT_MISSILE_SILO, UT_SAM_LAUNCHER } from "../../types";
 import type { RenderSettings } from "../RenderSettings";
 import { createProgram } from "../utils/GlUtils";
@@ -80,7 +81,7 @@ export class BarPass {
     this.veterancyHealthBonus = config.warshipVeterancyHealthBonus();
 
     // --- Shader program ---
-    this.program = createProgram(gl, barVertSrc, barFragSrc);
+    this.program = createProgram(gl, barVertSrc, barFragSrc, "BarPass");
     this.uCamera = gl.getUniformLocation(this.program, "uCamera")!;
     this.uBarSize = gl.getUniformLocation(this.program, "uBarSize")!;
     this.uBarOffset = gl.getUniformLocation(this.program, "uBarOffset")!;

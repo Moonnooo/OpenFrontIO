@@ -1,3 +1,4 @@
+import type { NameEntry } from "../../../render/types";
 /**
  * Encodes normalized frames as keyframes (the full state) or deltas (what
  * changed since the previous frame). Every chunk starts with a keyframe,
@@ -28,7 +29,7 @@
  *               updates carry the terrain byte in bits 16-23.
  */
 
-import type { NameEntry, PlayerState, UnitState } from "../../../render/types";
+import type { PlayerState, UnitState } from "../../../render/types";
 import { BinaryWriter } from "../BinaryWriter";
 import {
   PLAYER_FIELDS,

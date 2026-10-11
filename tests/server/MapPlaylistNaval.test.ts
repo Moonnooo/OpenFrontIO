@@ -1,5 +1,5 @@
+import { GameConfigSchema } from "@openfront/engine-api/Schemas";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { GameConfigSchema } from "../../src/core/Schemas";
 import { MapPlaylist } from "../../src/server/MapPlaylist";
 vi.mock("../../src/server/MapLandTiles", () => ({
   getMapLandTiles: async () => 1_000_000,

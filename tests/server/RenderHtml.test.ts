@@ -12,6 +12,11 @@ import {
 } from "../../src/server/RenderHtml";
 import { ServerEnv } from "../../src/server/ServerEnv";
 
+// Keep the bootstrap placement checks independent of a preceding local build.
+vi.mock("../../src/server/RuntimeAssetManifest", () => ({
+  getRuntimeAssetManifest: async () => ({}),
+}));
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // The identity deploy.sh writes: the tests below boot as letter "a" with one

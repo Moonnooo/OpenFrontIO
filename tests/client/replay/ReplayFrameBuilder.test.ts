@@ -1,3 +1,4 @@
+import type { FrameData } from "../../../src/client/render/types";
 /**
  * Replay viewer parity: the FrameData the viewer builds from a decoded replay
  * must match what the live client's GameView builds from the worker stream
@@ -6,11 +7,28 @@
  * The live side is a spectator (no local player), as the viewer is.
  */
 
+import {
+  GameType,
+  PlayerInfo,
+  PlayerType,
+  UnitType,
+} from "@openfront/engine-api/game/GameTypes";
+import { type MapManifest } from "@openfront/engine-api/game/MapFiles";
+import {
+  genTerrainFromBin,
+  type TerrainMapData,
+} from "@openfront/engine-lib/game/TerrainMapLoader";
+import { AttackExecution } from "@openfront/engine/execution/AttackExecution";
+import { ConstructionExecution } from "@openfront/engine/execution/ConstructionExecution";
+import { NukeExecution } from "@openfront/engine/execution/NukeExecution";
+import { SpawnExecution } from "@openfront/engine/execution/SpawnExecution";
+import { TransportShipExecution } from "@openfront/engine/execution/TransportShipExecution";
+import { Execution, Game } from "@openfront/engine/game/Game";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { RailroadCache } from "../../../src/client/render/frame/RailroadCache";
-import type { FrameData, UnitState } from "../../../src/client/render/types";
+import type { UnitState } from "../../../src/client/render/types";
 import type {
   ReplayFrame,
   ReplayHeader,
@@ -18,24 +36,6 @@ import type {
 import { ReplayFrameBuilder } from "../../../src/client/replay/ReplayFrameBuilder";
 import { ReplayTerrain } from "../../../src/client/replay/ReplayTerrain";
 import { GameView } from "../../../src/client/view/GameView";
-import { AttackExecution } from "../../../src/core/execution/AttackExecution";
-import { ConstructionExecution } from "../../../src/core/execution/ConstructionExecution";
-import { NukeExecution } from "../../../src/core/execution/NukeExecution";
-import { SpawnExecution } from "../../../src/core/execution/SpawnExecution";
-import { TransportShipExecution } from "../../../src/core/execution/TransportShipExecution";
-import {
-  Execution,
-  Game,
-  GameType,
-  PlayerInfo,
-  PlayerType,
-  UnitType,
-} from "../../../src/core/game/Game";
-import {
-  genTerrainFromBin,
-  type MapManifest,
-  type TerrainMapData,
-} from "../../../src/core/game/TerrainMapLoader";
 import { setup } from "../../util/Setup";
 import { stubConfig, stubWorker } from "../../util/viewStubs";
 import { openReader, recordGame, type RecordedGame } from "./util/RecordGame";

@@ -1,8 +1,7 @@
+import { GameType } from "@openfront/engine-api/game/GameTypes";
 import { LitElement, html, nothing, type TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
-import { GameType } from "../../core/game/Game";
-import { UserSettings } from "../../core/game/UserSettings";
 import "../hud/layers/ColumnPicker";
 import {
   columnsFor,
@@ -10,6 +9,7 @@ import {
   type ColumnDef,
 } from "../hud/layers/lib/StatsColumns";
 import { type ColumnId, type StatsTableKind } from "../StatsConstants";
+import { UserSettings } from "../UserSettings";
 import { translateText } from "../Utils";
 import type { GameView } from "../view";
 import "./PlayerRankBadge";

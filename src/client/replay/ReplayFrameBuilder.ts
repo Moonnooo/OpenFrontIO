@@ -1,3 +1,10 @@
+import type {
+  BonusEvent,
+  DeadUnitFx,
+  FrameData,
+  NameEntry,
+  PlayerStatic,
+} from "../render/types";
 /**
  * Builds the renderer's FrameData from decoded replay frames, like
  * GameView.populateFrame does from the worker's updates. A replay has no
@@ -21,7 +28,7 @@
 import {
   GameUpdateType,
   type GameUpdateViewData,
-} from "../../core/game/GameUpdates";
+} from "@openfront/engine-api/game/GameUpdates";
 import { computeAllianceClusters } from "../render/frame/derive/AllianceClusters";
 import { extractNukeTelegraphs } from "../render/frame/derive/NukeTelegraphs";
 import { computePlayerStatus } from "../render/frame/derive/PlayerStatus";
@@ -29,15 +36,7 @@ import { buildRelationMatrix } from "../render/frame/derive/RelationMatrix";
 import { RailroadCache } from "../render/frame/RailroadCache";
 import { SpiralTrails, type SpiralParams } from "../render/frame/SpiralTrails";
 import { TrailManager } from "../render/frame/TrailManager";
-import type {
-  BonusEvent,
-  DeadUnitFx,
-  FrameData,
-  NameEntry,
-  PlayerState,
-  PlayerStatic,
-  UnitState,
-} from "../render/types";
+import type { PlayerState, UnitState } from "../render/types";
 import { STRUCTURE_TYPES, TRAIL_TYPES } from "../render/types/UnitType";
 import type {
   RailroadEvent,

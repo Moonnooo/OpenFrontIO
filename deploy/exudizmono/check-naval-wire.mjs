@@ -1,10 +1,10 @@
 // An ordinary second guest client for the isolated preview. Never point this at production.
-import WebSocket from "ws";
 import {
   createGameWireContext,
   decodeServerMessage,
   encodeClientMessage,
-} from "../../src/core/ZbinWire.ts";
+} from "@openfront/shared/ZbinWire";
+import WebSocket from "ws";
 const gameID = process.argv[2];
 if (!gameID) throw new Error("Pass the preview lobby ID");
 const auth = await fetch("http://api:8787/auth/refresh", {

@@ -1,9 +1,6 @@
+import { buildAssetUrl } from "@openfront/shared/AssetPaths";
+import { assetUrl, rewriteAssetsForCdn } from "@openfront/shared/AssetUrls";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import {
-  assetUrl,
-  buildAssetUrl,
-  rewriteAssetsForCdn,
-} from "../src/core/AssetUrls";
 
 describe("AssetUrls", () => {
   test("returns hashed URLs for direct asset matches", () => {

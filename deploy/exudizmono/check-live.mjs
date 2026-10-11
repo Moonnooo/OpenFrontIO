@@ -1,10 +1,10 @@
-import assert from "node:assert/strict";
-import WebSocket from "ws";
-import { UserMeResponseSchema } from "./src/core/ApiSchemas.ts";
+import { UserMeResponseSchema } from "@openfront/shared/ApiSchemas";
 import {
   decodeServerMessage,
   encodeClientMessage,
-} from "./src/core/ZbinWire.ts";
+} from "@openfront/shared/ZbinWire";
+import assert from "node:assert/strict";
+import WebSocket from "ws";
 const base = process.env.TEST_BASE || "https://game.exudizmono.com";
 const auth = await fetch(base + "/backend/auth/refresh", { method: "POST" });
 assert.equal(auth.status, 200);

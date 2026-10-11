@@ -1,8 +1,4 @@
-import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
-import fs from "node:fs";
-import { DatabaseSync } from "node:sqlite";
-import { UserMeResponseSchema } from "./src/core/ApiSchemas.ts";
+import { UserMeResponseSchema } from "@openfront/shared/ApiSchemas";
 import {
   ClanBansResponseSchema,
   ClanBrowseResponseSchema,
@@ -11,7 +7,11 @@ import {
   ClanLeaderboardResponseSchema,
   ClanMembersResponseSchema,
   ClanRequestsResponseSchema,
-} from "./src/core/ClanApiSchemas.ts";
+} from "@openfront/shared/ClanApiSchemas";
+import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
+import fs from "node:fs";
+import { DatabaseSync } from "node:sqlite";
 const dir = fs.mkdtempSync("/tmp/exudizmono-clans-test-"),
   base = "http://127.0.0.1:8787";
 let child;

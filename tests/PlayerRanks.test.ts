@@ -1,6 +1,10 @@
+import {
+  GameMode,
+  GameType,
+  RankedType,
+} from "@openfront/engine-api/game/GameTypes";
+import type { GameConfig } from "@openfront/engine-api/Schemas";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GameMode, GameType, RankedType } from "../src/core/game/Game";
-import type { GameConfig } from "../src/core/Schemas";
 import { lookupRanks, mayShowRanks, rankMode } from "../src/server/PlayerRanks";
 vi.mock("../src/server/ServerEnv", () => ({
   ServerEnv: { jwtIssuer: () => "https://stats.example.test" },

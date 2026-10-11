@@ -1,4 +1,4 @@
-import { PlayerBuildableUnitType } from "../core/game/Game";
+import { PlayerBuildableUnitType } from "@openfront/engine-api/game/GameTypes";
 
 export interface UIState {
   navalVariant?: "warship" | "submarine" | "sonar";

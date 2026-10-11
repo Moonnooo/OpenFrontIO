@@ -1,3 +1,9 @@
+import type {
+  NameEntry,
+  PlayerStatic,
+  PlayerStatusData,
+  RendererConfig,
+} from "../../../types";
 /**
  * NamePass — GPU-rendered player names + troop counts using MSDF text.
  *
@@ -16,19 +22,13 @@
  *   - types          — shared interfaces + constants
  */
 
-import type { Config } from "../../../../../core/configuration/Config";
-import type {
-  NameEntry,
-  PlayerState,
-  PlayerStatic,
-  PlayerStatusData,
-  RendererConfig,
-} from "../../../types";
+import type { Config } from "@openfront/engine-lib/configuration/Config";
+import type { PlayerState } from "../../../types";
 import { PlayerTypeEnum } from "../../../types";
 import type { RenderSettings } from "../../RenderSettings";
 import { createFullscreenQuad } from "../../utils/GlUtils";
 
-import { renderTroops } from "../../../../Utils";
+import { renderTroops } from "@openfront/engine-lib/Format";
 import type { GlyphTables } from "./AtlasData";
 import {
   buildEmojiLookup,

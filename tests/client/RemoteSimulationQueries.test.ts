@@ -1,7 +1,7 @@
+import type { GameStartInfo } from "@openfront/engine-api/Schemas";
 import { afterEach, expect, it, vi } from "vitest";
 import { RemoteSimulationClient } from "../../src/client/RemoteSimulationClient";
 import type { Transport } from "../../src/client/Transport";
-import type { GameStartInfo } from "../../src/core/Schemas";
 afterEach(() => vi.useRealTimers());
 it("coalesces identical queries and paces distinct requests below the server limit", async () => {
   vi.useFakeTimers();

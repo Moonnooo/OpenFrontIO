@@ -6,7 +6,7 @@ const { getCosmeticsHash, getGamesPlayed } = vi.hoisted(() => ({
 }));
 vi.mock("../../src/client/Cosmetics", () => ({ getCosmeticsHash }));
 vi.mock("../../src/client/Utils", () => ({ getGamesPlayed }));
-vi.mock("../../src/core/AssetUrls", () => ({
+vi.mock("@openfront/shared/AssetUrls", () => ({
   assetUrl: () => "/_assets/release-history.rev2.json",
 }));
 

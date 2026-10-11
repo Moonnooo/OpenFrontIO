@@ -1,3 +1,4 @@
+import type { RendererConfig } from "../../types";
 /**
  * PointLightPass — instanced radial-falloff quads for unit/structure lights.
  *
@@ -5,8 +6,8 @@
  * draw() is pure GPU: uniforms + one drawArraysInstanced call.
  */
 
-import type { Config } from "src/core/configuration/Config";
-import type { RendererConfig, UnitState } from "../../types";
+import type { Config } from "@openfront/engine-lib/configuration/Config";
+import type { UnitState } from "../../types";
 import {
   SMOOTHED_NUKE_TYPES,
   UT_ATOM_BOMB,
@@ -133,6 +134,7 @@ export class PointLightPass {
       gl,
       shaderSrc(lightVertSrc, { MAX_LIGHT_TYPES }),
       lightFragSrc,
+      "PointLightPass",
     );
     this.uLightCam = gl.getUniformLocation(this.lightProg, "uCamera")!;
     this.uRadiusMultiplier = gl.getUniformLocation(

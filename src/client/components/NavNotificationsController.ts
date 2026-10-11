@@ -1,5 +1,5 @@
+import { assetUrl } from "@openfront/shared/AssetUrls";
 import { ReactiveController, ReactiveControllerHost } from "lit";
-import { assetUrl } from "../../core/AssetUrls";
 import { getGamesPlayed } from "../Utils";
 
 const HELP_SEEN_KEY = "helpSeen";

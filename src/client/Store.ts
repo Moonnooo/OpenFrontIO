@@ -59,3 +59,11 @@ export class StoreModal extends BaseModal {
     </div>`;
   }
 }
+
+export function subTabForItem(
+  itemKey: string,
+): "patterns" | "flags" | "crowns" {
+  if (itemKey.startsWith("crown:")) return "crowns";
+  if (itemKey.startsWith("flag:")) return "flags";
+  return "patterns";
+}

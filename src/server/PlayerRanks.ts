@@ -1,6 +1,6 @@
+import { GameMode, GameType } from "@openfront/engine-api/game/GameTypes";
+import { GameConfig } from "@openfront/engine-api/Schemas";
 import { z } from "zod";
-import { GameMode, GameType } from "../core/game/Game";
-import { GameConfig } from "../core/Schemas";
 import { ServerEnv } from "./ServerEnv";
 
 const RankSchema = z.object({

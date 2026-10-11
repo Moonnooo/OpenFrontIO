@@ -1,3 +1,4 @@
+import type { NameEntry, PlayerStatic } from "../render/types";
 /**
  * Makes a replay frame look like a GameView so the game's HUD components
  * can be reused as they are.
@@ -18,17 +19,16 @@
  * tests rely on that.
  */
 
-import type { Config } from "../../core/configuration/Config";
-import type { PlayerType, Team, UnitType } from "../../core/game/Game";
-import type { TileRef } from "../../core/game/GameMap";
-import { GameUpdateType } from "../../core/game/GameUpdates";
-import { OWNER_MASK } from "../render/gl/utils/TileCodec";
+import type { TileRef } from "@openfront/engine-api/game/GameMap";
 import type {
-  NameEntry,
-  PlayerState,
-  PlayerStatic,
-  UnitState,
-} from "../render/types";
+  PlayerType,
+  Team,
+  UnitType,
+} from "@openfront/engine-api/game/GameTypes";
+import { GameUpdateType } from "@openfront/engine-api/game/GameUpdates";
+import type { Config } from "@openfront/engine-lib/configuration/Config";
+import { OWNER_MASK } from "../render/gl/utils/TileCodec";
+import type { PlayerState, UnitState } from "../render/types";
 import type { GameView } from "../view";
 import { playerTypeFromEnum } from "../view/EntityState";
 import type { ReplayFrame } from "./codec/ReplayTypes";

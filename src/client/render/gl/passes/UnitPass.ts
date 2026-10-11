@@ -1,3 +1,17 @@
+import type { RendererConfig } from "../../types";
+import {
+  SMOOTHED_NUKE_TYPES,
+  UT_ATOM_BOMB,
+  UT_HYDROGEN_BOMB,
+  UT_MIRV,
+  UT_MIRV_WARHEAD,
+  UT_SAM_MISSILE,
+  UT_SHELL,
+  UT_TRADE_SHIP,
+  UT_TRAIN,
+  UT_TRANSPORT,
+  UT_WARSHIP,
+} from "../../types";
 /**
  * UnitPass — GPU-rendered mobile unit sprites.
  *
@@ -32,23 +46,10 @@
  *   Shells emit 2 instances (pos + lastPos) to match live game's 2-pixel trail.
  */
 
-import { assetUrl } from "src/core/AssetUrls";
-import type { Config } from "src/core/configuration/Config";
-import type { RendererConfig, UnitState } from "../../types";
-import {
-  SMOOTHED_NUKE_TYPES,
-  TrainType,
-  UT_ATOM_BOMB,
-  UT_HYDROGEN_BOMB,
-  UT_MIRV,
-  UT_MIRV_WARHEAD,
-  UT_SAM_MISSILE,
-  UT_SHELL,
-  UT_TRADE_SHIP,
-  UT_TRAIN,
-  UT_TRANSPORT,
-  UT_WARSHIP,
-} from "../../types";
+import type { Config } from "@openfront/engine-lib/configuration/Config";
+import { assetUrl } from "@openfront/shared/AssetUrls";
+import type { UnitState } from "../../types";
+import { TrainType } from "../../types";
 import { DynamicInstanceBuffer } from "../DynamicBuffer";
 import type { RenderSettings } from "../RenderSettings";
 import unitFragSrc from "../shaders/unit/unit.frag.glsl?raw";
@@ -299,6 +300,7 @@ export class UnitPass {
         TRAIN_FIRST_COL,
         TRAIN_EFFECT_ROW_BASE: TRAIN_EFFECT_BLOCK * MAX_TRAIL_COLORS,
       }),
+      "UnitPass",
     );
     this.uCamera = gl.getUniformLocation(this.program, "uCamera")!;
     this.uTick = gl.getUniformLocation(this.program, "uTick")!;

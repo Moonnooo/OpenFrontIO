@@ -1,3 +1,4 @@
+import type { NameEntry, PlayerStatic } from "../../render/types";
 /**
  * Types shared by the replay encoder and decoder.
  *
@@ -6,12 +7,7 @@
  * straight to the renderer.
  */
 
-import type {
-  NameEntry,
-  PlayerState,
-  PlayerStatic,
-  UnitState,
-} from "../../render/types";
+import type { PlayerState, UnitState } from "../../render/types";
 
 /**
  * Format version, part of a stored replay's key (ReplayStore), so bump it

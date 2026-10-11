@@ -1,7 +1,7 @@
+import { GameType } from "@openfront/engine-api/game/GameTypes";
+import { decodeView, encodeView } from "@openfront/shared/AuthoritativeCodec";
+import { createGameWireContext } from "@openfront/shared/ZbinWire";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GameType } from "../../src/core/game/Game";
-import { decodeView, encodeView } from "../../src/core/net/AuthoritativeCodec";
-import { createGameWireContext } from "../../src/core/ZbinWire";
 import {
   makeClient,
   makeGame,

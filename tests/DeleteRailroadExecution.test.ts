@@ -1,10 +1,10 @@
+import { PlayerType, UnitType } from "@openfront/engine-api/game/GameTypes";
+import { DeleteRailroadIntentSchema } from "@openfront/engine-api/Schemas";
+import { DeleteRailroadExecution } from "@openfront/engine/execution/DeleteRailroadExecution";
+import { DeleteUnitExecution } from "@openfront/engine/execution/DeleteUnitExecution";
+import { FactoryExecution } from "@openfront/engine/execution/FactoryExecution";
+import { TrainExecution } from "@openfront/engine/execution/TrainExecution";
 import { describe, expect, it, vi } from "vitest";
-import { DeleteRailroadExecution } from "../src/core/execution/DeleteRailroadExecution";
-import { DeleteUnitExecution } from "../src/core/execution/DeleteUnitExecution";
-import { FactoryExecution } from "../src/core/execution/FactoryExecution";
-import { TrainExecution } from "../src/core/execution/TrainExecution";
-import { PlayerType, UnitType } from "../src/core/game/Game";
-import { DeleteRailroadIntentSchema } from "../src/core/Schemas";
 import { playerInfo, setup } from "./util/Setup";
 import { executeTicks } from "./util/utils";
 

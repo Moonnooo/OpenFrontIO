@@ -1,1 +1,1 @@
-export { AuthoritativeView } from "../core/net/AuthoritativeView";
+export { AuthoritativeView } from "@openfront/engine/ServerAuthority";

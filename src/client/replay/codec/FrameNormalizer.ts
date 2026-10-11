@@ -1,3 +1,4 @@
+import type { NameEntry, PlayerStatic } from "../../render/types";
 /**
  * FrameNormalizer turns the worker's per-tick GameUpdateViewData into the
  * full per-tick state the encoder writes.
@@ -14,24 +15,18 @@
  * out: frames keep theirs.
  */
 
-import type { PlayerID } from "../../../core/game/Game";
-import { applyStateUpdate } from "../../../core/game/GameUpdateUtils";
+import type { PlayerID } from "@openfront/engine-api/game/GameTypes";
 import {
   GameUpdateType,
   type GameUpdateViewData,
   type PlayerUpdate,
   type UnitUpdate,
-} from "../../../core/game/GameUpdates";
+} from "@openfront/engine-api/game/GameUpdates";
 import {
   unpackMotionPlans,
   type MotionPlanRecord,
-} from "../../../core/game/MotionPlans";
-import type {
-  NameEntry,
-  PlayerState,
-  PlayerStatic,
-  UnitState,
-} from "../../render/types";
+} from "@openfront/engine-lib/game/MotionPlans";
+import type { PlayerState, UnitState } from "../../render/types";
 import {
   applyPackedAttackTroops,
   applyPackedPlayerStats,
@@ -41,6 +36,7 @@ import {
   unitStateFromUpdate,
 } from "../../view/EntityState";
 import { MotionPlanResolver } from "../../view/MotionPlanResolver";
+import { applyStateUpdate } from "../../view/PlayerStateUpdate";
 import type { MiscUpdates } from "./ReplayTypes";
 
 /**

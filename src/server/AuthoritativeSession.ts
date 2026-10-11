@@ -1,10 +1,20 @@
+import { GameMapType } from "@openfront/engine-api/game/GameTypes";
+import {
+  GameUpdateType,
+  GameUpdateViewData,
+} from "@openfront/engine-api/game/GameUpdates";
+import { ClientID, GameStartInfo, Turn } from "@openfront/engine-api/Schemas";
+import {
+  createGameRunner,
+  GameRunner,
+} from "@openfront/engine/ServerAuthority";
+import {
+  GameMapLoader,
+  loadMapFiles,
+  MapData,
+} from "@openfront/shared/GameMapLoader";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { GameMapType } from "../core/game/Game";
-import { GameMapLoader, MapData } from "../core/game/GameMapLoader";
-import { GameUpdateType, GameUpdateViewData } from "../core/game/GameUpdates";
-import { createGameRunner, GameRunner } from "../core/GameRunner";
-import { ClientID, GameStartInfo, Turn } from "../core/Schemas";
 import { AuthoritativeView } from "./AuthoritativeView";
 class ServerMaps implements GameMapLoader {
   getMapData(map: GameMapType): MapData {
@@ -47,52 +57,55 @@ export class AuthoritativeSession {
     private publish: (frame: GameUpdateViewData) => void,
     private failed: () => void,
   ) {
-    this.ready = createGameRunner(
-      info,
-      undefined,
+    this.ready = loadMapFiles(
       new ServerMaps(),
-      (frame) => {
-        if (this.stopped) return;
-        if (!("updates" in frame)) {
-          this.failed();
-          return;
-        }
-        for (let i = 0; i < frame.packedTileUpdates.length; i += 2)
-          this.tiles.set(
-            frame.packedTileUpdates[i],
-            frame.packedTileUpdates[i + 1],
-          );
-        if (frame.playerNameViewData) this.names = frame.playerNameViewData;
-        if (frame.updates[GameUpdateType.SpawnPhaseEnd].length)
-          this.spawnEnd = frame.updates[GameUpdateType.SpawnPhaseEnd];
-        for (const rail of frame.updates[
-          GameUpdateType.RailroadConstructionEvent
-        ])
-          this.railroads.set(rail.id, rail);
-        for (const rail of frame.updates[
-          GameUpdateType.RailroadDestructionEvent
-        ])
-          this.railroads.delete(rail.id);
-        for (const rail of frame.updates[GameUpdateType.RailroadSnapEvent]) {
-          this.railroads.delete(rail.originalId);
-          this.railroads.set(rail.newId1, {
-            type: GameUpdateType.RailroadConstructionEvent,
-            id: rail.newId1,
-            tiles: rail.tiles1,
-          });
-          this.railroads.set(rail.newId2, {
-            type: GameUpdateType.RailroadConstructionEvent,
-            id: rail.newId2,
-            tiles: rail.tiles2,
-          });
-        }
-        this.latest = frame;
-        this.publish(frame);
-      },
-    ).then((runner) => {
-      this.runner = runner;
-      return runner;
-    });
+      info.config.gameMap,
+      info.config.gameMapSize,
+    )
+      .then((map) =>
+        createGameRunner(info, undefined, map, (frame) => {
+          if (this.stopped) return;
+          if (!("updates" in frame)) {
+            this.failed();
+            return;
+          }
+          for (let i = 0; i < frame.packedTileUpdates.length; i += 2)
+            this.tiles.set(
+              frame.packedTileUpdates[i],
+              frame.packedTileUpdates[i + 1],
+            );
+          if (frame.playerNameViewData) this.names = frame.playerNameViewData;
+          if (frame.updates[GameUpdateType.SpawnPhaseEnd].length)
+            this.spawnEnd = frame.updates[GameUpdateType.SpawnPhaseEnd];
+          for (const rail of frame.updates[
+            GameUpdateType.RailroadConstructionEvent
+          ])
+            this.railroads.set(rail.id, rail);
+          for (const rail of frame.updates[
+            GameUpdateType.RailroadDestructionEvent
+          ])
+            this.railroads.delete(rail.id);
+          for (const rail of frame.updates[GameUpdateType.RailroadSnapEvent]) {
+            this.railroads.delete(rail.originalId);
+            this.railroads.set(rail.newId1, {
+              type: GameUpdateType.RailroadConstructionEvent,
+              id: rail.newId1,
+              tiles: rail.tiles1,
+            });
+            this.railroads.set(rail.newId2, {
+              type: GameUpdateType.RailroadConstructionEvent,
+              id: rail.newId2,
+              tiles: rail.tiles2,
+            });
+          }
+          this.latest = frame;
+          this.publish(frame);
+        }),
+      )
+      .then((runner) => {
+        this.runner = runner;
+        return runner;
+      });
     void this.ready.catch(() => this.failed());
   }
   turn(turn: Turn): void {

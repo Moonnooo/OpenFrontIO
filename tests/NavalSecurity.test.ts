@@ -1,27 +1,28 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { WarshipExecution } from "../src/core/execution/WarshipExecution";
 import {
-  Game,
   GameType,
-  Player,
   PlayerInfo,
   PlayerType,
-  Unit,
   UnitType,
-} from "../src/core/game/Game";
-import { createGame } from "../src/core/game/GameImpl";
-import { GameMapImpl } from "../src/core/game/GameMap";
+} from "@openfront/engine-api/game/GameTypes";
 import {
   GameUpdateType,
   GameUpdateViewData,
-} from "../src/core/game/GameUpdates";
+} from "@openfront/engine-api/game/GameUpdates";
+import { GameMapImpl } from "@openfront/engine-lib/game/GameMapImpl";
+import { WarshipExecution } from "@openfront/engine/execution/WarshipExecution";
+import { Game, Player, Unit } from "@openfront/engine/game/Game";
+import { createGame } from "@openfront/engine/game/GameImpl";
 import {
   canSeeNavalUnit,
   depthChargeDamage,
   launchDepthCharge,
-} from "../src/core/game/NavalCombat";
-import { decodeView, encodeView } from "../src/core/net/AuthoritativeCodec";
-import { restoreGame, snapshotGame } from "../src/core/snapshot/GameSnapshot";
+} from "@openfront/engine/game/NavalCombat";
+import {
+  restoreGame,
+  snapshotGame,
+} from "@openfront/engine/snapshot/GameSnapshot";
+import { decodeView, encodeView } from "@openfront/shared/AuthoritativeCodec";
+import { beforeEach, describe, expect, it } from "vitest";
 import { AuthoritativeSession } from "../src/server/AuthoritativeSession";
 import { AuthoritativeView } from "../src/server/AuthoritativeView";
 import { setup } from "./util/Setup";

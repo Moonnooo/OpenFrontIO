@@ -42,3 +42,6 @@ signin.env
 
 # Isolated preview credentials
 deploy/exudizmono/preview.env
+# src/core package split (#1701): tick-trace inputs and baselines
+.tick-records/
+.tick-baseline/

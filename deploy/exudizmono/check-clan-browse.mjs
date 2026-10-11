@@ -1,10 +1,10 @@
-import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
-import fs from "node:fs";
 import {
   ClanBrowseResponseSchema,
   ClanLeaderboardResponseSchema,
-} from "./src/core/ClanApiSchemas.ts";
+} from "@openfront/shared/ClanApiSchemas";
+import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
+import fs from "node:fs";
 const dir = fs.mkdtempSync("/tmp/clan-browse-test-");
 const child = spawn(process.execPath, ["--import", "tsx", "api.mjs"], {
   env: {
